@@ -5,6 +5,16 @@ TITLE Batalaha Naval - Projeto
     MATRIZ DW 20 DUP ( 20 DUP (*))
 
 .CODE
+    MAIN PROC
+        MOV AX,@DATA
+        MOV DS,AX
+
+        CALL ImprimirMatriz
+
+        MOV AH,4Ch
+        INT 21H
+    MAIN ENDP
+
     ImprimirMatriz PROC
         LEA BX, MATRIZ
 
@@ -36,4 +46,6 @@ TITLE Batalaha Naval - Projeto
         ;
         EXIT:
             RET
+    ImprimirMatriz ENDP
+END MAIN
 
