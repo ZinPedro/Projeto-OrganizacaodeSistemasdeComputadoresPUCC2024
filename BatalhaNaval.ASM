@@ -21,7 +21,7 @@ ENDM
 .DATA
     VETORL DB 'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T'
     VETORN DB '1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20'
-    MATRIZ DB 20 DUP (20 DUP ('*'))  ; Matriz 20x20 inicializada com '*'
+    MATRIZ DB 20 DUP (20 DUP ('*'))  ; Matriz 20x20 com '*'
     ELINHA  DB ''
     ECOLUNA DB ''
 .CODE
