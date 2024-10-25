@@ -1,6 +1,23 @@
 TITLE Batalha Naval - Projeto
 .MODEL SMALL
 .STACK 100H
+
+ESPAÇO MACRO 
+    PUSH AX
+    MOV AH,02 
+    MOV DL,32
+    INT 21H 
+    POP AX
+ENDM   
+
+PulaLinha MACRO 
+    PUSH AX
+    MOV AH,02 
+    MOV DL,10
+    INT 21H
+    POP AX
+ENDM
+
 .DATA
     VETORL DB 'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T'
     VETORN DB '1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20'
@@ -20,49 +37,65 @@ TITLE Batalha Naval - Projeto
     MAIN ENDP
 
     ImprimirMatriz PROC        
-        XOR BX,BX          ; BX se refere ao índice da linha da matriz
-        XOR DI,DI
+        XOR BX,BX           ; BX se refere ao índice da linha da matriz
+        XOR DI,DI           ; DI se refere ao índice dos vetores auxiliares
         MOV AH, 02h         ; Função para imprimir um caractere
 
-        MOV CX,20
-    VLETRA:
+        MOV CX,20  
+
+        ESPAÇO              ; três espaços antes do A (apenas estético)
+        ESPAÇO
+        ESPAÇO
+
+    VLETRA:                 ;imprime o vetor das letras, para nomear as colunas da matriz
         MOV DL,VETORL[DI]
-        INT 21H
+        INT 21H                  
         INC DI
 
-        MOV DL,32
-        INT 21H
+        ESPAÇO
 
         LOOP VLETRA
 
-        MOV DL, 10          ; Caractere de nova linha
-        INT 21H
+        PulaLinha
 
         XOR DI,DI
-    FOR:
+    FOR:                    ; impreção dos números que nomeiam as linhas e das linhas da matriz
         XOR SI, SI          ; SI se refere ao índice da coluna
         
-        MOV CX, 20          ; 20 colunas
+        MOV CX, 20      
 
-        MOV DL,VETORN[DI]
+        CMP DI,8            ; Cria um espaço antes dos 9 primeiros números que nomeiam as linha (apenas estético)
+        JA SKIP
+        ESPAÇO
+        SKIP:
+        
+        MOV DL,VETORN[DI]   ; imprime o número antes de imprimir a linha
         INT 21h
-        INC DI
+        INC DI 
+
+        CMP DI,9            ; se di > 9, é preciso imprimir dois números para fazer a representação
+        JA VNUMERO
+        ESPAÇO
+        JMP FOR2
+        VNUMERO:
+            MOV DL,VETORN[DI]
+            INT 21H
+            INC DI
+            ESPAÇO
+        ;
     FOR2:
-        MOV DL, MATRIZ[BX][SI]  
-        INT 21h                 ; Imprime o caractere
+        MOV DL, MATRIZ[BX][SI]      ;imprime a matriz  
+        INT 21h                  
 
-        INC SI              ; Próxima coluna  
+        INC SI                      ; Próxima coluna  
          
-        MOV DL,32
-        INT 21H
+        ESPAÇO
                             
-        LOOP FOR2           ; Repete para as 20 colunas
+        LOOP FOR2                   ; Repete para as 20 colunas
+ 
+        PulaLinha
 
-        ; Imprime nova linha
-        MOV DL, 10          ; Caractere de nova linha
-        INT 21H
-
-        INC BX              ; Próxima linha
+        INC BX               
         CMP BX, 20          ; Verifica se chegou na última linha
         JL FOR              ; Se SI < 20, continua
 
