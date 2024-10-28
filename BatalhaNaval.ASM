@@ -123,6 +123,7 @@ ENDM
         PUSH AX
         MOV AL,10
         MUL BL
+				MOV BX,AX
         POP AX
         ADD BL,AL
 
@@ -132,6 +133,7 @@ ENDM
             SUB BL,1
             MOV AL,6
             MUL BL
+						MOV BX,AX
             POP AX
 
             CMP AL,05BH
