@@ -30,6 +30,11 @@ ENDM
         MOV DS, AX
 
         CALL ImprimirMatriz
+        PulaLinha
+        CALL Atira
+        PulaLinha
+        CALL ImprimirMatriz
+
 
 
         MOV AH, 4Ch
@@ -95,15 +100,52 @@ ENDM
  
         PulaLinha
 
-        INC BX               
-        CMP BX, 20          ; Verifica se chegou na última linha
+        ADD BX,20             
+        CMP BX,400         ; Verifica se chegou na última linha
         JL FOR              ; Se SI < 20, continua
 
         RET                 ;Retorna ao main
     ImprimirMatriz ENDP
 
     Atira PROC 
+        XOR BH,BH
 
+        MOV AH,1
+        INT 21H
+        AND AL,0FH
+        MOV BL,AL
 
+        INT 21H
+        CMP AL,3AH
+        JA LETRA
+
+        AND AL,0FH
+        PUSH AX
+        MOV AL,10
+        MUL BL
+        POP AX
+        ADD BL,AL
+
+        INT 21H
+        LETRA:
+            PUSH AX
+            SUB BL,1
+            MOV AL,6
+            MUL BL
+            POP AX
+
+            CMP AL,05BH
+            JA MINUSCULA
+
+            SUB AL,41H
+
+            MINUSCULA:
+                SUB AL,61H
+        ; 
+        XOR AH,AH
+        MOV SI,AX
+
+        MOV MATRIZ[BX][SI], 'x'
+        RET
     ATIRA ENDP    
 END MAIN
