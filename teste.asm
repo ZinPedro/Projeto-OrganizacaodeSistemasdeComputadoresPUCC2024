@@ -128,25 +128,29 @@ ENDM
         PUSH AX
         MOV AL,10
         MUL BL
+		MOV BX,AX
         POP AX
         ADD BL,AL
 
         INT 21H
         LETRA:
             PUSH AX
-            SUB BL,1
+            DEC BL
             MOV AL,6
             MUL BL
+            MOV BX,AX
             POP AX
 
             CMP AL,05BH
             JA MINUSCULA
 
             SUB AL,41H
+            JMP EXITLETRA
 
             MINUSCULA:
                 SUB AL,61H
         ; 
+        EXITLETRA:
         XOR AH,AH
         MOV SI,AX
 

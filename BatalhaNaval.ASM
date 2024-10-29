@@ -1,153 +1,168 @@
 TITLE Batalha Naval - Projeto
-.MODEL SMALL
-.STACK 100H
+.MODEL SMALL              ; Define o modelo de memória como SMALL
+.STACK 100H              ; Define um espaço de stack de 256 bytes
 
-ESPAÇO MACRO 
-    PUSH AX
-    MOV AH,02 
-    MOV DL,32
-    INT 21H 
-    POP AX
-ENDM   
+ESPAÇO MACRO             ; Início da macro para imprimir um espaço
+    PUSH AX              ; Salva o valor do registrador AX na pilha
+    MOV AH,02           ; Função para imprimir um caractere
+    MOV DL,32           ; Caractere de espaço (ASCII 32)
+    INT 21H             ; Executa função
+    POP AX              ; Restaura o valor original de AX
+ENDM                     ; Fim da macro
 
-PulaLinha MACRO 
-    PUSH AX
-    MOV AH,02 
-    MOV DL,10
-    INT 21H
-    POP AX
-ENDM
+PulaLinha MACRO         ; Início da macro para pular a linha
+    PUSH AX              ; Salva o valor do registrador AX na pilha
+    MOV AH,02           ; Função para imprimir um caractere
+    MOV DL,10           ; Caractere de nova linha (ASCII 10)
+    INT 21H             ; Executa função
+    POP AX              ; Restaura o valor original de AX
+ENDM                     ; Fim da macro
 
-.DATA
-    VETORL DB 'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T'
-    VETORN DB '1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20'
-    MATRIZ DB 20 DUP (20 DUP ('*'))  ; Matriz 20x20 com '*'
-    ELINHA  DB ''
-    ECOLUNA DB ''
-.CODE
-    MAIN PROC
-        MOV AX, @DATA
-        MOV DS, AX
+MENSAGEM MACRO          ; Início da macro para imprimir uma mensagem
+    PUSH AX              ; Salva o valor de AX na pilha
+    PUSH DX              ; Salva o valor de DX na pilha
+    MOV AH,09H          ; Função para imprimir uma string
+    LEA DX,MSG1         ; Carrega o endereço da mensagem em DX
+    INT 21H             ; Executa função
+    POP DX              ; Restaura o valor original de DX
+    POP AX              ; Restaura o valor original de AX
+ENDM                     ; Fim da macro
 
-        CALL ImprimirMatriz
-        PulaLinha
-        CALL Atira
-        PulaLinha
-        CALL ImprimirMatriz
+.DATA                    ; Seção de dados
+    VETORL DB 'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T' ; Letras para colunas
+    VETORN DB '1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20' ; Números para linhas
+    MATRIZ DB 20 DUP (20 DUP ('*'))  ; Cria uma matriz 20x20 inicializada com '*'
+    MSG1 DB 10,13,'Qual a cordenada em que voce quer atirar? (escreva o numero da linha e a letra da coluna, respectivamente, Exps: 1a, 17Q, 6T)',10,13,'$' ; Mensagem para o jogador
+.CODE                    ; Seção de código
+    MAIN PROC            
+        MOV AX, @DATA    
+        MOV DS, AX       
 
+        MOV CX,10        ; Inicializa o contador CX com 10 (número de rodadas)
 
-
-        MOV AH, 4Ch
-        INT 21H
-    MAIN ENDP
-
-    ImprimirMatriz PROC        
-        XOR BX,BX           ; BX se refere ao índice da linha da matriz
-        XOR DI,DI           ; DI se refere ao índice dos vetores auxiliares
-        MOV AH, 02h         ; Função para imprimir um caractere
-
-        MOV CX,20  
-
-        ESPAÇO              ; três espaços antes do A (apenas estético)
-        ESPAÇO
-        ESPAÇO
-
-    VLETRA:                 ;imprime o vetor das letras, para nomear as colunas da matriz
-        MOV DL,VETORL[DI]
-        INT 21H                  
-        INC DI
-
-        ESPAÇO
-
-        LOOP VLETRA
-
-        PulaLinha
-
-        XOR DI,DI
-    FOR:                    ; impreção dos números que nomeiam as linhas e das linhas da matriz
-        XOR SI, SI          ; SI se refere ao índice da coluna
-        
-        MOV CX, 20      
-
-        CMP DI,8            ; Cria um espaço antes dos 9 primeiros números que nomeiam as linha (apenas estético)
-        JA SKIP
-        ESPAÇO
-        SKIP:
-        
-        MOV DL,VETORN[DI]   ; imprime o número antes de imprimir a linha
-        INT 21h
-        INC DI 
-
-        CMP DI,9            ; se di > 9, é preciso imprimir dois números para fazer a representação
-        JA VNUMERO
-        ESPAÇO
-        JMP FOR2
-        VNUMERO:
-            MOV DL,VETORN[DI]
-            INT 21H
-            INC DI
-            ESPAÇO
+        BATALHA:         ; Início do loop de batalha
+            CALL ImprimirMatriz ; Chama a função para imprimir a matriz
+            MENSAGEM      ; Chama a macro para imprimir a mensagem
+            CALL Atira     ; Chama a função para processar o tiro
+            PulaLinha      ; Chama a macro para pular uma linha
+            LOOP BATALHA   ; Decrementa CX e volta ao início do loop se CX não for zero
         ;
-    FOR2:
-        MOV DL, MATRIZ[BX][SI]      ;imprime a matriz  
-        INT 21h                  
 
-        INC SI                      ; Próxima coluna  
-         
+        MOV AH, 4Ch      ; Função para terminar o programa
+        INT 21H          ; Executa função
+    MAIN ENDP            ; Fim do procedimento principal
+
+    ImprimirMatriz PROC  ; Início do procedimento para imprimir a matriz
+        PUSH CX           ; Salva o valor de CX na pilha
+
+        XOR BX,BX        ; Zera o registrador BX (índice da linha da matriz)
+        XOR DI,DI        ; Zera o registrador DI (índice dos vetores auxiliares)
+        MOV AH, 02h      ; Função para imprimir um caractere
+
+        MOV CX,20        ; Inicializa CX com 20 (número de colunas)
+
+        ESPAÇO           ; Chama a macro para imprimir três espaços antes do vetor de letras
         ESPAÇO
-                            
-        LOOP FOR2                   ; Repete para as 20 colunas
- 
-        PulaLinha
+        ESPAÇO
 
-        ADD BX,20             
-        CMP BX,400         ; Verifica se chegou na última linha
-        JL FOR              ; Se SI < 20, continua
+    VLETRA:               ; Início do loop para imprimir o vetor de letras referente as colunas
+        MOV DL,VETORL[DI] ; Carrega a letra correspondente da coluna em DL
+        INT 21H          ; Executa função
+        INC DI           ; Incrementa DI para a próxima letra
 
-        RET                 ;Retorna ao main
-    ImprimirMatriz ENDP
+        ESPAÇO           ; Imprime um espaço entre as letras
 
-    Atira PROC 
-        XOR BH,BH
+        LOOP VLETRA      ; Repete até que todas as letras tenham sido impressas
 
-        MOV AH,1
-        INT 21H
-        AND AL,0FH
-        MOV BL,AL
+        PulaLinha        ; Chama a macro para pular uma linha
 
-        INT 21H
-        CMP AL,3AH
-        JA LETRA
+        XOR DI,DI        ; Reseta DI para o índice das linhas
+    FOR:                  ; Início do loop para imprimir números e linhas
+        XOR SI, SI       ; Zera o registrador SI (índice da coluna)
+        
+        MOV CX, 20       ; Inicializa CX com 20 (número de colunas)
 
-        AND AL,0FH
-        PUSH AX
-        MOV AL,10
-        MUL BL
-				MOV BX,AX
-        POP AX
-        ADD BL,AL
+        CMP DI,8         ; Verifica se DI é maior que 8
+        JA SKIP          ; Se DI > 8, não gera espaço antes do número referente a linha
+        ESPAÇO           ; Imprime um espaço antes dos números se DI <= 8
+    SKIP:
+        
+        MOV DL,VETORN[DI] ; Carrega o número correspondente da linha em DL
+        INT 21h          ; Executa função
+        INC DI           ; Incrementa DI para o próximo número
 
-        INT 21H
-        LETRA:
-            PUSH AX
-            SUB BL,1
-            MOV AL,6
-            MUL BL
-						MOV BX,AX
-            POP AX
+        CMP DI,9        ; Verifica se DI é menor ou igual a 9
+        JBE FOR2         ; Pula para a impressão da matriz
+    VNUMERO:             ; Executa VNUMERO se DI for maior que nove (para imprimir os dois números refferente a linha)
+        MOV DL,VETORN[DI] ; Carrega o número correspondente em DL
+        INT 21H          ; Executa função
+        INC DI           ; Incrementa DI
 
-            CMP AL,05BH
-            JA MINUSCULA
+    FOR2:                 ; Início do loop para imprimir a matriz
+        ESPAÇO           ; Imprime um espaço entre os valores da matriz
 
-            SUB AL,41H
+        MOV DL, MATRIZ[BX][SI] ; Carrega o valor da matriz em DL
+        INT 21h          ; Executa função
+        INC SI           ; Incrementa SI para a próxima coluna  
+                  
+        LOOP FOR2        ; Repete para as 20 colunas
 
-            MINUSCULA:
-                SUB AL,61H
-        ; 
-        XOR AH,AH
-        MOV SI,AX
+        PulaLinha        ; Chama a macro para pular uma linha
 
-        MOV MATRIZ[BX][SI], 'x'
-        RET
-    ATIRA ENDP    
-END MAIN
+        ADD BX,20        ; Incrementa BX para a próxima linha
+        CMP BX,400       ; Verifica se BX atingiu 400 (20x20)
+        JL FOR           ; Se BX < 400, continua o loop para imprimir mais linhas
+
+        POP CX           ; Restaura o valor de CX da pilha
+        RET               ; Retorna ao chamador
+    ImprimirMatriz ENDP   ; Fim da função ImprimirMatriz
+
+    Atira PROC            ; Início da função para processar um tiro
+        XOR BH,BH        ; Zera o registrador BH
+
+        MOV AH,1         ; Função para ler um caractere da entrada
+        INT 21H          ; Executa função
+        AND AL,0FH      ; Máscara para obter o número da linha
+
+        MOV BL,AL        ; Armazena o número da linha em BL
+
+        INT 21H          ; Executa função
+        CMP AL,3AH       ; Compara seo valor do caractere está acima de 3Ah, e etiver é uma letra, e não é outro número
+        JA LETRA         ; Se estiver, vai para processar letra
+
+        AND AL,0FH      ; Máscara para obter o segundo número da linha
+        PUSH AX          ; Salva AX na pilha
+        MOV AL,10       ; Carrega 10 para multiplicação
+        MUL BL           ; Multiplica 10 pelo número da linha
+        MOV BX,AX        ; Armazena o resultado em BX
+        POP AX           ; Restaura AX para o segundo número digitado
+
+        ADD BL,AL        ; Soma o primeiro número multiplicado por 10 com o segundo (Entrada de Decimal)
+
+        INT 21H          ; Executa função
+    LETRA:
+        PUSH AX          ; Salva AX na pilha
+        DEC BL           ; Decrementa BL para indexar corretamente
+
+        MOV AL,20        ; Carrega 20 para multiplicação
+        MUL BL           ; Multiplica 20 pelo número da linha (para correponder corretamente com a linha da matriz)
+        MOV BX,AX        ; Armazena o resultado em BX
+        POP AX           ; Restaura AX
+
+        CMP AL,05BH      ; Compara se o valor de AL está acima do valor da ascii de 'Z'
+        JA MINUSCULA     ; Se sim, vai para tratar como letra minúscula
+
+        SUB AL,41H       ; Se não, converte letra maiúscula para índice
+        JMP EXITLETRA     ; Pula para a saída
+
+    MINUSCULA:
+        SUB AL,61H       ; Converte letra minúscula para índice
+
+    EXITLETRA:
+        XOR AH,AH        ; Zera AH para usar AX como endereço
+        MOV SI,AX        ; Move o índice da coluna para SI
+
+        MOV MATRIZ[BX][SI], 'x' ; Marca a posição atingida na matriz com 'x'
+        RET               ; Retorna ao chamador
+    ATIRA ENDP            ; Fim da função Atira    
+END MAIN  
