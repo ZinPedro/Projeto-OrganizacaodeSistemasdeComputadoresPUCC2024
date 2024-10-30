@@ -3,18 +3,22 @@ TITLE Batalha Naval - Projeto
 .STACK 100H              ; Define um espaço de stack de 256 bytes
 
 ESPAÇO MACRO             ; Início da macro para imprimir um espaço
-    PUSH AX              ; Salva o valor do registrador AX na pilha
+    PUSH AX             ; Salva o valor do registrador AX na pilha
+    PUSH DX             ; Salva o valor do registrador DX na pilha
     MOV AH,02           ; Função para imprimir um caractere
     MOV DL,32           ; Caractere de espaço (ASCII 32)
     INT 21H             ; Executa função
+    POP DX              ; Restaura o valor original de DX
     POP AX              ; Restaura o valor original de AX
 ENDM                     ; Fim da macro
 
 PulaLinha MACRO         ; Início da macro para pular a linha
-    PUSH AX              ; Salva o valor do registrador AX na pilha
+    PUSH AX             ; Salva o valor do registrador AX na pilha
+    PUSH DX             ; Salva o valor do registrador DX na pilha
     MOV AH,02           ; Função para imprimir um caractere
     MOV DL,10           ; Caractere de nova linha (ASCII 10)
     INT 21H             ; Executa função
+    POP DX              ; Restaura o valor original de DX
     POP AX              ; Restaura o valor original de AX
 ENDM                     ; Fim da macro
 
