@@ -10,4 +10,4 @@ Dimensão das embarcações em Embarcações.png
 
 Deve ter uma opção de finalização automática do jogo.
 
-Grupo: Pedro Henrique Coan Zin, 
+Grupo: Pedro Henrique Coan Zin, Eloise dos Santos Ruiz, Gustavo Bordin Correa
