@@ -57,68 +57,68 @@ ENDM                     ; Fim da macro
     MAIN ENDP            ; Fim do procedimento principal
 
     ImprimirMatriz PROC  ; Início do procedimento para imprimir a matriz
-        PUSH CX           ; Salva o valor de CX na pilha
+            PUSH CX           ; Salva o valor de CX na pilha
 
-        XOR BX,BX        ; Zera o registrador BX (índice da linha da matriz)
-        XOR DI,DI        ; Zera o registrador DI (índice dos vetores auxiliares)
-        MOV AH, 02h      ; Função para imprimir um caractere
+            XOR BX,BX        ; Zera o registrador BX (índice da linha da matriz)
+            XOR DI,DI        ; Zera o registrador DI (índice dos vetores auxiliares)
+            MOV AH, 02h      ; Função para imprimir um caractere
 
-        MOV CX,20        ; Inicializa CX com 20 (número de colunas)
+            MOV CX,20        ; Inicializa CX com 20 (número de colunas)
 
-        ESPAÇO           ; Chama a macro para imprimir três espaços antes do vetor de letras
-        ESPAÇO
-        ESPAÇO
+            ESPAÇO           ; Chama a macro para imprimir três espaços antes do vetor de letras
+            ESPAÇO
+            ESPAÇO
 
-    VLETRA:               ; Início do loop para imprimir o vetor de letras referente as colunas
-        MOV DL,VETORL[DI] ; Carrega a letra correspondente da coluna em DL
-        INT 21H          ; Executa função
-        INC DI           ; Incrementa DI para a próxima letra
+        VLETRA:               ; Início do loop para imprimir o vetor de letras referente as colunas
+            MOV DL,VETORL[DI] ; Carrega a letra correspondente da coluna em DL
+            INT 21H          ; Executa função
+            INC DI           ; Incrementa DI para a próxima letra
 
-        ESPAÇO           ; Imprime um espaço entre as letras
+            ESPAÇO           ; Imprime um espaço entre as letras
 
-        LOOP VLETRA      ; Repete até que todas as letras tenham sido impressas
+            LOOP VLETRA      ; Repete até que todas as letras tenham sido impressas
 
-        PulaLinha        ; Chama a macro para pular uma linha
+            PulaLinha        ; Chama a macro para pular uma linha
 
-        XOR DI,DI        ; Reseta DI para o índice das linhas
-    FOR:                  ; Início do loop para imprimir números e linhas
-        XOR SI, SI       ; Zera o registrador SI (índice da coluna)
-        
-        MOV CX, 20       ; Inicializa CX com 20 (número de colunas)
+            XOR DI,DI        ; Reseta DI para o índice das linhas
+        FOR:                  ; Início do loop para imprimir números e linhas
+            XOR SI, SI       ; Zera o registrador SI (índice da coluna)
+            
+            MOV CX, 20       ; Inicializa CX com 20 (número de colunas)
 
-        CMP DI,8         ; Verifica se DI é maior que 8
-        JA SKIP          ; Se DI > 8, não gera espaço antes do número referente a linha
-        ESPAÇO           ; Imprime um espaço antes dos números se DI <= 8
-    SKIP:
-        
-        MOV DL,VETORN[DI] ; Carrega o número correspondente da linha em DL
-        INT 21h          ; Executa função
-        INC DI           ; Incrementa DI para o próximo número
+            CMP DI,8         ; Verifica se DI é maior que 8
+            JA SKIP          ; Se DI > 8, não gera espaço antes do número referente a linha
+            ESPAÇO           ; Imprime um espaço antes dos números se DI <= 8
+        SKIP:
+            
+            MOV DL,VETORN[DI] ; Carrega o número correspondente da linha em DL
+            INT 21h          ; Executa função
+            INC DI           ; Incrementa DI para o próximo número
 
-        CMP DI,9        ; Verifica se DI é menor ou igual a 9
-        JBE FOR2         ; Pula para a impressão da matriz
-    VNUMERO:             ; Executa VNUMERO se DI for maior que nove (para imprimir os dois números refferente a linha)
-        MOV DL,VETORN[DI] ; Carrega o número correspondente em DL
-        INT 21H          ; Executa função
-        INC DI           ; Incrementa DI
+            CMP DI,9        ; Verifica se DI é menor ou igual a 9
+            JBE FOR2         ; Pula para a impressão da matriz
+        VNUMERO:             ; Executa VNUMERO se DI for maior que nove (para imprimir os dois números refferente a linha)
+            MOV DL,VETORN[DI] ; Carrega o número correspondente em DL
+            INT 21H          ; Executa função
+            INC DI           ; Incrementa DI
 
-    FOR2:                 ; Início do loop para imprimir a matriz
-        ESPAÇO           ; Imprime um espaço entre os valores da matriz
+        FOR2:                 ; Início do loop para imprimir a matriz
+            ESPAÇO           ; Imprime um espaço entre os valores da matriz
 
-        MOV DL, MATRIZ[BX][SI] ; Carrega o valor da matriz em DL
-        INT 21h          ; Executa função
-        INC SI           ; Incrementa SI para a próxima coluna  
-                  
-        LOOP FOR2        ; Repete para as 20 colunas
+            MOV DL, MATRIZ[BX][SI] ; Carrega o valor da matriz em DL
+            INT 21h          ; Executa função
+            INC SI           ; Incrementa SI para a próxima coluna  
+                    
+            LOOP FOR2        ; Repete para as 20 colunas
 
-        PulaLinha        ; Chama a macro para pular uma linha
+            PulaLinha        ; Chama a macro para pular uma linha
 
-        ADD BX,20        ; Incrementa BX para a próxima linha
-        CMP BX,400       ; Verifica se BX atingiu 400 (20x20)
-        JL FOR           ; Se BX < 400, continua o loop para imprimir mais linhas
+            ADD BX,20        ; Incrementa BX para a próxima linha
+            CMP BX,400       ; Verifica se BX atingiu 400 (20x20)
+            JL FOR           ; Se BX < 400, continua o loop para imprimir mais linhas
 
-        POP CX           ; Restaura o valor de CX da pilha
-        RET               ; Retorna ao chamador
+            POP CX           ; Restaura o valor de CX da pilha
+            RET               ; Retorna ao chamador
     ImprimirMatriz ENDP   ; Fim da função ImprimirMatriz
 
     Atira PROC            ; Início da função para processar um tiro
