@@ -2,6 +2,8 @@ TITLE Batalha Naval - Projeto
 .MODEL SMALL              ; Define o modelo de memória como SMALL
 .STACK 100H              ; Define um espaço de stack de 256 bytes
 
+
+
 ESPAÇO MACRO             ; Início da macro para imprimir um espaço
     PUSH AX             ; Salva o valor do registrador AX na pilha
     PUSH DX             ; Salva o valor do registrador DX na pilha
