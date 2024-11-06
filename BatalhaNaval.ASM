@@ -298,5 +298,11 @@ ENDM
         RET               ; Retorna ao chamador
     ATIRA ENDP            ; Fim da função Atira 
 
+    
 
+    VERIFICA PROC
+        PUSH_ALL
+        MOV AX,BX
+        POP_ALL 
+    VERIFICA ENDP
 END MAIN  
