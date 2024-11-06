@@ -2,51 +2,173 @@ TITLE Batalha Naval - Projeto
 .MODEL SMALL              ; Define o modelo de memória como SMALL
 .STACK 100H              ; Define um espaço de stack de 256 bytes
 
-ESPAÇO MACRO             ; Início da macro para imprimir um espaço
-    PUSH AX             ; Salva o valor do registrador AX na pilha
-    PUSH DX             ; Salva o valor do registrador DX na pilha
+PUSH_ALL MACRO
+    PUSH AX
+    PUSH BX
+    PUSH CX
+    PUSH DX
+    PUSH SI
+    PUSH DI
+ENDM
+
+POP_ALL MACRO
+    POP DI 
+    POP SI 
+    POP DX 
+    POP CX 
+    POP BX 
+    POP AX 
+ENDM
+
+ESPAÇO MACRO             ; Início da macro para imprimir um espaço 
+    PUSH_ALL             
     MOV AH,02           ; Função para imprimir um caractere
     MOV DL,32           ; Caractere de espaço (ASCII 32)
     INT 21H             ; Executa função
-    POP DX              ; Restaura o valor original de DX
-    POP AX              ; Restaura o valor original de AX
+    POP_ALL             
 ENDM                     ; Fim da macro
 
 PulaLinha MACRO         ; Início da macro para pular a linha
-    PUSH AX             ; Salva o valor do registrador AX na pilha
-    PUSH DX             ; Salva o valor do registrador DX na pilha
+    PUSH_ALL             ; Salva o valor do registrador DX na pilha
     MOV AH,02           ; Função para imprimir um caractere
     MOV DL,10           ; Caractere de nova linha (ASCII 10)
     INT 21H             ; Executa função
-    POP DX              ; Restaura o valor original de DX
-    POP AX              ; Restaura o valor original de AX
+    POP_ALL             ; Restaura o valor original de AX
 ENDM                     ; Fim da macro
 
-MENSAGEM MACRO          ; Início da macro para imprimir uma mensagem
-    PUSH AX              ; Salva o valor de AX na pilha
-    PUSH DX              ; Salva o valor de DX na pilha
+MENSAGEM MACRO MSG         ; Início da macro para imprimir uma mensagem
+    PUSH_ALL             ; Salva o valor de DX na pilha
     MOV AH,09H          ; Função para imprimir uma string
-    LEA DX,MSG1         ; Carrega o endereço da mensagem em DX
+    LEA DX,MSG         ; Carrega o endereço da mensagem em DX
     INT 21H             ; Executa função
-    POP DX              ; Restaura o valor original de DX
-    POP AX              ; Restaura o valor original de AX
+    POP_ALL             ; Restaura o valor original de AX
 ENDM                     ; Fim da macro
+
+ENCOURACADO MACRO  X, Y
+    PUSH_ALL
+    
+    MOV SI,Y
+    DEC SI
+
+    MOV BX,X
+    DEC BX
+    MOV AX,20
+    MUL BL 
+    MOV BX,AX
+
+    MOV CX,4
+
+    ENCOURACADO_:
+        MOV GABARITO[BX][SI],'#'
+        INC SI
+        LOOP ENCOURACADO_
+
+    POP_ALL
+ENDM
+
+FRAGATA MACRO  X, Y
+    PUSH_ALL
+    
+    MOV SI,Y
+    DEC SI
+
+    MOV BX,X
+    DEC BX
+    MOV AX,20
+    MUL BL 
+    MOV BX,AX
+
+    MOV CX,3
+
+    FRAGATA_:
+        MOV GABARITO[BX][SI],'#'
+        INC SI
+        LOOP FRAGATA_
+
+    POP_ALL
+ENDM
+
+SUBMARINO MACRO  X, Y
+    PUSH_ALL
+    
+    MOV SI,Y
+    DEC SI
+
+    MOV BX,X
+    DEC BX
+    MOV AX,20
+    MUL BL 
+    MOV BX,AX
+
+    MOV CX,2
+
+    SUBMARINO_:
+        MOV GABARITO[BX][SI],'#'
+        INC SI
+        LOOP SUBMARINO_
+
+    POP_ALL
+ENDM
+
+HIDROAV MACRO X,Y
+    PUSH_ALL
+    
+    MOV SI,Y
+    DEC SI
+
+    MOV BX,X
+    DEC BX
+    MOV AX,20
+    MUL BL 
+    MOV BX,AX
+
+    MOV CX,2
+
+    MOV GABARITO[BX][SI],'#'
+    ADD BX,20
+
+    HIDROAV_:
+        MOV GABARITO[BX][SI],'#'
+        INC SI
+        LOOP HIDROAV_
+    ADD BX,20 
+    SUB SI,2  
+    MOV GABARITO[BX][SI],'#'
+    POP_ALL
+ENDM
 
 .DATA                    ; Seção de dados
     VETORL DB 'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T' ; Letras para colunas
     VETORN DB '1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20' ; Números para linhas
     MATRIZ DB 20 DUP (20 DUP ('*'))  ; Cria uma matriz 20x20 inicializada com '*'
+    GABARITO DB 20 DUP (20 DUP ('X')) ; Cria a matriz gabarito
     MSG1 DB 10,13,'Qual a cordenada em que voce quer atirar? (escreva o numero da linha e a letra da coluna, respectivamente, Exps: 1a, 17Q, 6T)',10,13,'$' ; Mensagem para o jogador
 .CODE                    ; Seção de código
     MAIN PROC            
         MOV AX, @DATA    
-        MOV DS, AX       
+        MOV DS, AX  
 
-        MOV CX,10        ; Inicializa o contador CX com 10 (número de rodadas)
+        CMP AL,31H
+        JE BOT1
+        ;BOT3
+        
+        BOT1:
+        ENCOURACADO 1,16
+        FRAGATA 4,7 
+        SUBMARINO 19,1
+        HIDROAV 14,7
+        JMP CODIGO
+        BOT2:
+
+
+
+
+
+        MOV CX,100        ; Inicializa o contador CX com 10 (número de rodadas)
 
         BATALHA:         ; Início do loop de batalha
             CALL ImprimirMatriz ; Chama a função para imprimir a matriz
-            MENSAGEM      ; Chama a macro para imprimir a mensagem
+            MENSAGEM  MSG1    ; Chama a macro para imprimir a mensagem
             CALL Atira     ; Chama a função para processar o tiro
             PulaLinha      ; Chama a macro para pular uma linha
             LOOP BATALHA   ; Decrementa CX e volta ao início do loop se CX não for zero
@@ -166,7 +288,12 @@ ENDM                     ; Fim da macro
         XOR AH,AH        ; Zera AH para usar AX como endereço
         MOV SI,AX        ; Move o índice da coluna para SI
 
-        MOV MATRIZ[BX][SI], 'x' ; Marca a posição atingida na matriz com 'x'
+
+
+        MOV AH,GABARITO[BX][SI]
+        MOV MATRIZ[BX][SI],AH  ; Marca a posição atingida na matriz com 'x'
         RET               ; Retorna ao chamador
-    ATIRA ENDP            ; Fim da função Atira    
+    ATIRA ENDP            ; Fim da função Atira 
+
+
 END MAIN  
