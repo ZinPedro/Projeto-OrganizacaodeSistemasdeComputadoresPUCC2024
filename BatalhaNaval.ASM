@@ -151,12 +151,15 @@ ENDM
         CMP AL,31H
         JE BOT1
         ;BOT3
-        
+            ENCOURACADO 1,16
+            FRAGATA 4,7 
+            SUBMARINO 19,1
+            HIDROAV 14,7
         BOT1:
-        ENCOURACADO 1,16
-        FRAGATA 4,7 
-        SUBMARINO 19,1
-        HIDROAV 14,7
+            ENCOURACADO 1,16
+            FRAGATA 4,7 
+            SUBMARINO 19,1
+            HIDROAV 14,7
         JMP CODIGO
         BOT2:
 
