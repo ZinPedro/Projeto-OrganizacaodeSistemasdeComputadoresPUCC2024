@@ -143,29 +143,14 @@ ENDM
     MATRIZ DB 20 DUP (20 DUP ('*'))  ; Cria uma matriz 20x20 inicializada com '*'
     GABARITO DB 20 DUP (20 DUP ('X')) ; Cria a matriz gabarito
     MSG1 DB 10,13,'Qual a cordenada em que voce quer atirar? (escreva o numero da linha e a letra da coluna, respectivamente, Exps: 1a, 17Q, 6T)',10,13,'$' ; Mensagem para o jogador
+    MSG2 DB 10,13,'Escolha o jogo que voce quer jogar?',10,13,'1)Jogo A',10,13,'2)Jogo B',10,13,'3)Jogo C'10,13,'$'
+    MSG3 DB 10,13,'JOGO INVALIDO DIGITE UM NUMERO DE 1 A 3!'
 .CODE                    ; Seção de código
     MAIN PROC            
         MOV AX, @DATA    
-        MOV DS, AX  
+        MOV DS, AX 
 
-        CMP AL,31H
-        JE BOT1
-        ;BOT3
-            ENCOURACADO 1,16
-            FRAGATA 4,7 
-            SUBMARINO 19,1
-            HIDROAV 14,7
-        BOT1:
-            ENCOURACADO 1,16
-            FRAGATA 4,7 
-            SUBMARINO 19,1
-            HIDROAV 14,7
-        JMP CODIGO
-        BOT2:
-
-
-
-
+        CALL PerguntaJogo 
 
         MOV CX,100        ; Inicializa o contador CX com 10 (número de rodadas)
 
@@ -180,6 +165,48 @@ ENDM
         MOV AH, 4Ch      ; Função para terminar o programa
         INT 21H          ; Executa função
     MAIN ENDP            ; Fim do procedimento principal
+
+    PerguntaJogo PROC
+        PUSH_ALL
+        MENSAGEM MSG2
+        MOV AH,01H
+        INT 21H
+        JOGO:
+            CMP AL,31H
+            JE BOT1
+            JB INVALIDO
+            CMP AL,32H
+            JE BOT2
+            CMP AL,33H
+            JE BOT3
+        INVALIDO:
+            MENSAGEM MSG3
+            JMP JOGO
+
+        BOT1:
+            ENCOURACADO 7,13
+            FRAGATA 20,3
+            SUBMARINO 17,5
+            HIDROAV 12,6
+            JMP SAIDA
+        BOT2:
+            ENCOURACADO 13,5
+            FRAGATA 10,17
+            SUBMARINO 18,13
+            HIDROAV 13,13
+            JMP SAIDA
+
+        BOT3:
+            ENCOURACADO 16,13
+            FRAGATA 14,5
+            SUBMARINO 1,5
+            HIDROAV 2,6
+            JMP SAIDA
+        SAIDA:
+        POP_ALL
+        RET
+    PerguntaJogo ENDP
+
 
     ImprimirMatriz PROC  ; Início do procedimento para imprimir a matriz
             PUSH CX           ; Salva o valor de CX na pilha
