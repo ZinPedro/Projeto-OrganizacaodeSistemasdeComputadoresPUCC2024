@@ -45,6 +45,7 @@ MENSAGEM MACRO MSG         ; Início da macro para imprimir uma mensagem
 ENDM                     ; Fim da macro
 
 ENCOURACADO MACRO  X, Y
+    LOCAL ENCOURACADO_
     PUSH_ALL
     
     MOV SI,Y
@@ -67,6 +68,7 @@ ENCOURACADO MACRO  X, Y
 ENDM
 
 FRAGATA MACRO  X, Y
+    LOCAL FRAGATA_
     PUSH_ALL
     
     MOV SI,Y
@@ -89,6 +91,7 @@ FRAGATA MACRO  X, Y
 ENDM
 
 SUBMARINO MACRO  X, Y
+    LOCAL SUBMARINO_
     PUSH_ALL
     
     MOV SI,Y
@@ -111,6 +114,7 @@ SUBMARINO MACRO  X, Y
 ENDM
 
 HIDROAV MACRO X,Y
+    LOCAL HIDROAV_
     PUSH_ALL
     
     MOV SI,Y
@@ -142,47 +146,50 @@ ENDM
     VETORN DB '1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20' ; Números para linhas
     MATRIZ DB 20 DUP (20 DUP ('*'))  ; Cria uma matriz 20x20 inicializada com '*'
     GABARITO DB 20 DUP (20 DUP ('X')) ; Cria a matriz gabarito
+
     MSG1 DB 10,13,'Qual a cordenada em que voce quer atirar? (escreva o numero da linha e a letra da coluna, respectivamente, Exps: 1a, 17Q, 6T)',10,13,'$' ; Mensagem para o jogador
+    NPERMITIDO DB 10,13,'Esta nao e uma escolha possivel! Tente novamente: ',10,13,'$'
+    TIROREPETIDO DB 10,13,'ALERTA! Voce ja atirou nessa posicao! Nao eh possivel dar dois tiros no mesmo lugar! Precione qualquer tecla para continuar.$'
+    VITORIA DB 'Parabens!! Voce acertou todos o barcos e venceu o jogo!$'
 .CODE                    ; Seção de código
     MAIN PROC            
         MOV AX, @DATA    
         MOV DS, AX  
 
-        CMP AL,31H
-        JE BOT1
-        ;BOT3
-            ENCOURACADO 1,16
-            FRAGATA 4,7 
-            SUBMARINO 19,1
-            HIDROAV 14,7
-        BOT1:
-            ENCOURACADO 1,16
-            FRAGATA 4,7 
-            SUBMARINO 19,1
-            HIDROAV 14,7
-        JMP CODIGO
-        BOT2:
-
-
-
+        XOR DX,DX         ;PREPARA A CONDIÇÃO DE VITORIA
+ 
+        ENCOURACADO 1,1
+        FRAGATA 2,1
+        SUBMARINO 3,1 
+        SUBMARINO 4,1 
+        HIDROAV 5,1 
+        HIDROAV 1,5 
 
 
         MOV CX,100        ; Inicializa o contador CX com 10 (número de rodadas)
 
-        BATALHA:         ; Início do loop de batalha
+        BATALHA:         ; Início do loop de batalha  
             CALL ImprimirMatriz ; Chama a função para imprimir a matriz
+
+            CMP DX,19
+            JAE VITORIA_ 
+
             MENSAGEM  MSG1    ; Chama a macro para imprimir a mensagem
             CALL Atira     ; Chama a função para processar o tiro
             PulaLinha      ; Chama a macro para pular uma linha
+ 
+
             LOOP BATALHA   ; Decrementa CX e volta ao início do loop se CX não for zero
         ;
+        VITORIA_:
+        MENSAGEM VITORIA 
 
         MOV AH, 4Ch      ; Função para terminar o programa
         INT 21H          ; Executa função
     MAIN ENDP            ; Fim do procedimento principal
 
     ImprimirMatriz PROC  ; Início do procedimento para imprimir a matriz
-            PUSH CX           ; Salva o valor de CX na pilha
+            PUSH_ALL
 
             XOR BX,BX        ; Zera o registrador BX (índice da linha da matriz)
             XOR DI,DI        ; Zera o registrador DI (índice dos vetores auxiliares)
@@ -242,22 +249,29 @@ ENDM
             CMP BX,400       ; Verifica se BX atingiu 400 (20x20)
             JL FOR           ; Se BX < 400, continua o loop para imprimir mais linhas
 
-            POP CX           ; Restaura o valor de CX da pilha
+            POP_ALL
             RET               ; Retorna ao chamador
     ImprimirMatriz ENDP   ; Fim da função ImprimirMatriz
 
-    Atira PROC            ; Início da função para processar um tiro
+    Atira PROC            ; Início da função para processar um tiro 
         XOR BH,BH        ; Zera o registrador BH
 
         MOV AH,1         ; Função para ler um caractere da entrada
+        VOLTA_NPERMITIDO:
         INT 21H          ; Executa função
-        AND AL,0FH      ; Máscara para obter o número da linha
+        CMP AL,39H
+        JA NPERMITIDO_ATIRA
+        CMP AL,31H
+        JB NPERMITIDO_ATIRA 
 
+        AND AL,0FH      ; Máscara para obter o número da linha 
         MOV BL,AL        ; Armazena o número da linha em BL
 
         INT 21H          ; Executa função
-        CMP AL,3AH       ; Compara seo valor do caractere está acima de 3Ah, e etiver é uma letra, e não é outro número
+        CMP AL,39H       ; Compara seo valor do caractere está acima de 3Ah, e etiver é uma letra, e não é outro número
         JA LETRA         ; Se estiver, vai para processar letra
+        CMP AL,30H
+        JB NPERMITIDO_ATIRA 
 
         AND AL,0FH      ; Máscara para obter o segundo número da linha
         PUSH AX          ; Salva AX na pilha
@@ -270,6 +284,31 @@ ENDM
 
         INT 21H          ; Executa função
     LETRA:
+        CMP AL,41H       ; Compara com 'A' 
+        JB NPERMITIDO_ATIRA
+
+        CMP AL,61H      ; Compara se o valor de AL está acima do valor da ascii de 'A'
+        JAE MINUSCULA     ; Se sim, vai para tratar como letra minúscula 
+
+        CMP AL,5AH  ;'Z'
+        JA NPERMITIDO_ATIRA
+
+        PUSH AX          ; Salva AX na pilha
+        DEC BL           ; Decrementa BL para indexar corretamente
+
+        MOV AL,20        ; Carrega 20 para multiplicação
+        MUL BL           ; Multiplica 20 pelo número da linha (para correponder corretamente com a linha da matriz)
+        MOV BX,AX        ; Armazena o resultado em BX
+        POP AX           ; Restaura AX
+ 
+        SUB AL,41H       ; Se não, converte letra maiúscula para índice
+        JMP EXITLETRA     ; Pula para a saída
+
+    MINUSCULA:
+
+        CMP AL,7AH
+        JA NPERMITIDO_ATIRA
+
         PUSH AX          ; Salva AX na pilha
         DEC BL           ; Decrementa BL para indexar corretamente
 
@@ -278,25 +317,39 @@ ENDM
         MOV BX,AX        ; Armazena o resultado em BX
         POP AX           ; Restaura AX
 
-        CMP AL,05BH      ; Compara se o valor de AL está acima do valor da ascii de 'Z'
-        JA MINUSCULA     ; Se sim, vai para tratar como letra minúscula
-
-        SUB AL,41H       ; Se não, converte letra maiúscula para índice
-        JMP EXITLETRA     ; Pula para a saída
-
-    MINUSCULA:
         SUB AL,61H       ; Converte letra minúscula para índice
 
     EXITLETRA:
         XOR AH,AH        ; Zera AH para usar AX como endereço
         MOV SI,AX        ; Move o índice da coluna para SI
 
-
+        CMP MATRIZ[BX][SI],'*'
+        JNE TIROREPETIDO_
 
         MOV AH,GABARITO[BX][SI]
-        MOV MATRIZ[BX][SI],AH  ; Marca a posição atingida na matriz com 'x'
+        MOV MATRIZ[BX][SI],AH  ; Marca a posição atingida na matriz com o que esta na mesma posição da matriz gabarito
+
+        CMP AH, '#'
+        JE ACERTO
+
+        RETORNO: 
         RET               ; Retorna ao chamador
-    ATIRA ENDP            ; Fim da função Atira 
 
+        NPERMITIDO_ATIRA:
+            MENSAGEM NPERMITIDO
+            JMP VOLTA_NPERMITIDO
 
+        ACERTO: 
+            INC CX  
+            INC DX  
+            JMP RETORNO   
+
+        TIROREPETIDO_:
+            PUSH AX
+            MENSAGEM TIROREPETIDO
+            MOV AH,01
+            INT 21H
+            POP AX
+            JMP RETORNO      
+    ATIRA ENDP       
 END MAIN  
