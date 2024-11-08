@@ -162,7 +162,7 @@ ENDM
     MSG3 DB 10,13,'JOGO INVALIDO, DIGITE UM NUMERO DE 1 A 5!',10,13,'$'
 
     NPERMITIDO DB 10,13,'Esta nao e uma escolha possivel! Tente novamente: ',10,13,'$'
-    TIROREPETIDO DB 10,13,'ALERTA! Voce ja atirou nessa posicao!...$'
+    TIROREPETIDO DB 10,13,'ALERTA! Voce ja atirou nessa posicao! Nao eh possivel dar dois tiros no mesmo lugar! Precione qualquer tecla para continuar.$'
     VITORIA DB 'Parabens!! Voce acertou todos o barcos e venceu o jogo!$'
     SAIDAMSG DB 'Voce escolheu sair do jogo! GAME OVER!!$'
     DERROTA DB 'Seus tiros acabaram e voce nao derrubou todos os barcos! GAME OVER!!$'
