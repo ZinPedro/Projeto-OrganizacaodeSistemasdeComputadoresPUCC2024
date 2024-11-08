@@ -150,7 +150,10 @@ ENDM
     MSG1 DB 10,13,'Qual a cordenada em que voce quer atirar? (escreva o numero da linha e a letra da coluna, respectivamente, Exps: 1a, 17Q, 6T)',10,13,'$' ; Mensagem para o jogador
     NPERMITIDO DB 10,13,'Esta nao e uma escolha possivel! Tente novamente: ',10,13,'$'
     TIROREPETIDO DB 10,13,'ALERTA! Voce ja atirou nessa posicao! Nao eh possivel dar dois tiros no mesmo lugar! Precione qualquer tecla para continuar.$'
+
     VITORIA DB 'Parabens!! Voce acertou todos o barcos e venceu o jogo!$'
+    SAIDAMSG DB 'Voce escolheu sair do jogo! GAME OVER!!$'
+    DERROTA DB 'Seus tiros acabaram e voce nao derrubou todos os barcos! GAME OVER!!$'
 .CODE                    ; Seção de código
     MAIN PROC            
         MOV AX, @DATA    
@@ -166,13 +169,16 @@ ENDM
         HIDROAV 1,5 
 
 
-        MOV CX,100        ; Inicializa o contador CX com 10 (número de rodadas)
+        MOV CX,10       ; Inicializa o contador CX com 10 (número de rodadas)
 
         BATALHA:         ; Início do loop de batalha  
             CALL ImprimirMatriz ; Chama a função para imprimir a matriz
 
-            CMP DX,19
-            JAE VITORIA_ 
+            CMP DX,4
+            JE VITORIA_ 
+
+            CMP DX,20
+            JE SAIDA_
 
             MENSAGEM  MSG1    ; Chama a macro para imprimir a mensagem
             CALL Atira     ; Chama a função para processar o tiro
@@ -181,9 +187,20 @@ ENDM
 
             LOOP BATALHA   ; Decrementa CX e volta ao início do loop se CX não for zero
         ;
+
+        ;DERROTA
+        CALL ImprimirMatriz ; Chama a função para imprimir a matriz
+        MENSAGEM DERROTA
+        JMP FIM
+
         VITORIA_:
         MENSAGEM VITORIA 
+        JMP FIM
 
+        SAIDA_:
+        MENSAGEM SAIDAMSG
+
+        FIM:
         MOV AH, 4Ch      ; Função para terminar o programa
         INT 21H          ; Executa função
     MAIN ENDP            ; Fim do procedimento principal
@@ -259,6 +276,10 @@ ENDM
         MOV AH,1         ; Função para ler um caractere da entrada
         VOLTA_NPERMITIDO:
         INT 21H          ; Executa função
+
+        CMP AL, 1BH      ;Compara com esc
+        JE SAIDA 
+
         CMP AL,39H
         JA NPERMITIDO_ATIRA
         CMP AL,31H
@@ -268,6 +289,10 @@ ENDM
         MOV BL,AL        ; Armazena o número da linha em BL
 
         INT 21H          ; Executa função
+
+        CMP AL, 1BH      ;Compara com esc
+        JE SAIDA 
+
         CMP AL,39H       ; Compara seo valor do caractere está acima de 3Ah, e etiver é uma letra, e não é outro número
         JA LETRA         ; Se estiver, vai para processar letra
         CMP AL,30H
@@ -282,7 +307,14 @@ ENDM
 
         ADD BL,AL        ; Soma o primeiro número multiplicado por 10 com o segundo (Entrada de Decimal)
 
-        INT 21H          ; Executa função
+        INT 21H          ; Executa função 
+
+        CMP AL, 1BH      ;Compara com esc
+        JE SAIDA 
+        JMP LETRA
+        
+            SAIDA:
+            JMP SAIDAicondicional
     LETRA:
         CMP AL,41H       ; Compara com 'A' 
         JB NPERMITIDO_ATIRA
@@ -350,6 +382,14 @@ ENDM
             MOV AH,01
             INT 21H
             POP AX
-            JMP RETORNO      
+            JMP RETORNO  
+
+        SAIDAicondicional:
+            MOV DX,20
+            INC CX
+            JMP RETORNO
+
+
+
     ATIRA ENDP   
 END MAIN  
