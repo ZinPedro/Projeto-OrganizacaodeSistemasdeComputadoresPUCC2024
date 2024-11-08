@@ -45,6 +45,7 @@ MENSAGEM MACRO MSG         ; Início da macro para imprimir uma mensagem
 ENDM                     ; Fim da macro
 
 ENCOURACADO MACRO  X, Y
+LOCAL ENCOURACADO_
     PUSH_ALL
     
     MOV SI,Y
@@ -67,6 +68,7 @@ ENCOURACADO MACRO  X, Y
 ENDM
 
 FRAGATA MACRO  X, Y
+    LOCAL FRAGATA_
     PUSH_ALL
     
     MOV SI,Y
@@ -89,6 +91,7 @@ FRAGATA MACRO  X, Y
 ENDM
 
 SUBMARINO MACRO  X, Y
+LOCAL SUBMARINO_
     PUSH_ALL
     
     MOV SI,Y
@@ -111,6 +114,7 @@ SUBMARINO MACRO  X, Y
 ENDM
 
 HIDROAV MACRO X,Y
+LOCAL HIDROAV_
     PUSH_ALL
     
     MOV SI,Y
@@ -143,7 +147,7 @@ ENDM
     MATRIZ DB 20 DUP (20 DUP ('*'))  ; Cria uma matriz 20x20 inicializada com '*'
     GABARITO DB 20 DUP (20 DUP ('X')) ; Cria a matriz gabarito
     MSG1 DB 10,13,'Qual a cordenada em que voce quer atirar? (escreva o numero da linha e a letra da coluna, respectivamente, Exps: 1a, 17Q, 6T)',10,13,'$' ; Mensagem para o jogador
-    MSG2 DB 10,13,'Escolha o jogo que voce quer jogar?',10,13,'1)Jogo A',10,13,'2)Jogo B',10,13,'3)Jogo C',10,13,'$'
+    MSG2 DB 10,13,'Escolha o jogo que voce quer jogar?',10,13,'1)Jogo A',10,13,'2)Jogo B',10,13,'3)Jogo C',10,13,'4)Jogo D',10,13,'5)Jogo E',10,13,'$'
     MSG3 DB 10,13,'JOGO INVALIDO DIGITE UM NUMERO DE 1 A 3!'
 .CODE                    ; Seção de código
     MAIN PROC            
@@ -179,6 +183,10 @@ ENDM
             JE BOT2
             CMP AL,33H
             JE BOT3
+            CMP AL,34H
+            JE BOT4
+            CMP AL,35H
+            JE BOT5
         INVALIDO:
             MENSAGEM MSG3
             JMP JOGO
@@ -186,24 +194,51 @@ ENDM
             JMP BOT2_ 
             BOT3:
             JMP BOT3_
-        BOT1:
+            BOT4:
+            JMP BOT4_
+            BOT5:
+            JMP BOT5_
+        BOT1:;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
             ENCOURACADO 7,13
             FRAGATA 20,3
+            FRAGATA 11,16
             SUBMARINO 17,5
             HIDROAV 12,6
+            HIDROAV 1,1
             JMP SAIDA
         BOT2_:
             ENCOURACADO 13,5
             FRAGATA 10,17
+            FRAGATA 4,10
             SUBMARINO 18,13
             HIDROAV 13,13
+            HIDROAV 8,6
             JMP SAIDA
 
         BOT3_:
             ENCOURACADO 16,13
             FRAGATA 14,5
+            FRAGATA 9,14
             SUBMARINO 1,5
-            HIDROAV 2,6
+            HIDROAV 3,6
+            HIDROAV 10,3
+            JMP SAIDA
+
+        BOT4_:
+            ENCOURACADO 12,11
+            FRAGATA 14,2
+            FRAGATA 7,7
+            SUBMARINO 2,3
+            HIDROAV 4,15
+            HIDROAV 15,12
+            JMP SAIDA
+        BOT5_:
+            ENCOURACADO 14,16
+            FRAGATA 20,16
+            FRAGATA 1,2
+            SUBMARINO 6,8
+            HIDROAV 3,14
+            HIDROAV 11,7
             JMP SAIDA
         SAIDA:
         POP_ALL
