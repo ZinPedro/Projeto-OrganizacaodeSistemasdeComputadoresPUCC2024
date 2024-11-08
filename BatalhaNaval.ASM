@@ -1,7 +1,8 @@
 TITLE Batalha Naval - Projeto
 .MODEL SMALL              ; Define o modelo de memória como SMALL
-.STACK 100H              ; Define um espaço de stack de 256 bytes
- 
+.STACK 100H               ; Define um espaço de stack de 256 bytes
+
+; Macro para empilhar todos os registradores usados
 PUSH_ALL MACRO
     PUSH AX
     PUSH BX
@@ -11,76 +12,82 @@ PUSH_ALL MACRO
     PUSH DI
 ENDM
 
+; Macro para desempilhar todos os registradores
 POP_ALL MACRO
-    POP DI 
-    POP SI 
-    POP DX 
-    POP CX 
-    POP BX 
-    POP AX 
+    POP DI
+    POP SI
+    POP DX
+    POP CX
+    POP BX
+    POP AX
 ENDM
 
-ESPAÇO MACRO             ; Início da macro para imprimir um espaço 
+; Macro para imprimir um espaço (caractere ASCII 32)
+ESPAÇO MACRO             
     PUSH_ALL   
     MOV AH,02           ; Função para imprimir um caractere
-    MOV DL,32           ; Caractere de espaço (ASCII 32)
-    INT 21H             ; Executa função
+    MOV DL,32           ; Caractere de espaço
+    INT 21H             ; Chama interrupção para imprimir
     POP_ALL             
-ENDM                     ; Fim da macro
+ENDM                     
 
-PulaLinha MACRO         ; Início da macro para pular a linha
-    PUSH_ALL             ; Salva o valor do registrador DX na pilha
+; Macro para pular uma linha (caractere ASCII 10)
+PulaLinha MACRO         
+    PUSH_ALL             
     MOV AH,02           ; Função para imprimir um caractere
-    MOV DL,10           ; Caractere de nova linha (ASCII 10)
-    INT 21H             ; Executa função
-    POP_ALL             ; Restaura o valor original de AX
-ENDM                     ; Fim da macro
+    MOV DL,10           ; Caractere de nova linha
+    INT 21H             ; Chama interrupção para imprimir
+    POP_ALL             
+ENDM                     
 
-MENSAGEM MACRO MSG         ; Início da macro para imprimir uma mensagem
-    PUSH_ALL             ; Salva o valor de DX na pilha
+; Macro para imprimir uma mensagem
+MENSAGEM MACRO MSG      
+    PUSH_ALL             
     MOV AH,09H          ; Função para imprimir uma string
-    LEA DX,MSG         ; Carrega o endereço da mensagem em DX
-    INT 21H             ; Executa função
-    POP_ALL             ; Restaura o valor original de AX
-ENDM                     ; Fim da macro
+    LEA DX,MSG          ; Carrega o endereço da mensagem
+    INT 21H             ; Chama interrupção para imprimir
+    POP_ALL             
+ENDM                     
 
-ENCOURACADO MACRO  X, Y 
-    LOCAL ENCOURACADO_  
+; Macro para posicionar um encouraçado (tamanho 4) no tabuleiro
+ENCOURACADO MACRO  X, Y  
+    LOCAL ENCOURACADO_   
     PUSH_ALL
-    
+
     MOV SI,Y
-    DEC SI
+    DEC SI              ; Ajusta índice da linha
 
     MOV BX,X
-    DEC BX
+    DEC BX              ; Ajusta índice da coluna
     MOV AX,20
-    MUL BL 
+    MUL BL              ; Calcula deslocamento da linha
     MOV BX,AX
 
-    MOV CX,4
+    MOV CX,4            ; Tamanho do encouraçado
 
     ENCOURACADO_:
-        MOV GABARITO[BX][SI],'#'
-        INC SI
+        MOV GABARITO[BX][SI],'#' ; Posiciona parte do navio
+        INC SI                   ; Move para a próxima linha
         LOOP ENCOURACADO_
 
     POP_ALL
 ENDM
 
-FRAGATA MACRO  X, Y
-    LOCAL FRAGATA_
+; Macro para posicionar uma fragata (tamanho 3) no tabuleiro
+FRAGATA MACRO  X, Y     
+    LOCAL FRAGATA_      
     PUSH_ALL
-    
+
     MOV SI,Y
-    DEC SI
+    DEC SI              ; Ajusta índice da linha
 
     MOV BX,X
-    DEC BX
+    DEC BX              ; Ajusta índice da coluna
     MOV AX,20
-    MUL BL 
+    MUL BL              ; Calcula deslocamento da linha
     MOV BX,AX
 
-    MOV CX,3
+    MOV CX,3            ; Tamanho da fragata
 
     FRAGATA_:
         MOV GABARITO[BX][SI],'#'
@@ -90,20 +97,21 @@ FRAGATA MACRO  X, Y
     POP_ALL
 ENDM
 
-SUBMARINO MACRO  X, Y 
-    LOCAL SUBMARINO_ 
+; Macro para posicionar um submarino (tamanho 2) no tabuleiro
+SUBMARINO MACRO  X, Y   
+    LOCAL SUBMARINO_    
     PUSH_ALL
-    
+
     MOV SI,Y
-    DEC SI
+    DEC SI              ; Ajusta índice da linha
 
     MOV BX,X
-    DEC BX
+    DEC BX              ; Ajusta índice da coluna
     MOV AX,20
-    MUL BL 
+    MUL BL              ; Calcula deslocamento da linha
     MOV BX,AX
 
-    MOV CX,2
+    MOV CX,2            ; Tamanho do submarino
 
     SUBMARINO_:
         MOV GABARITO[BX][SI],'#'
@@ -113,358 +121,375 @@ SUBMARINO MACRO  X, Y
     POP_ALL
 ENDM
 
-HIDROAV MACRO X,Y 
-    LOCAL HIDROAV_ 
+; Macro para posicionar um hidroavião (tamanho 4 (1 na primeira linha, 2 na segunda 1 na terceira)) no tabuleiro
+HIDROAV MACRO X,Y       
+    LOCAL HIDROAV_      
     PUSH_ALL
-    
+
     MOV SI,Y
-    DEC SI
+    DEC SI              ; Ajusta índice da linha
 
     MOV BX,X
-    DEC BX
+    DEC BX              ; Ajusta índice da coluna
     MOV AX,20
-    MUL BL 
+    MUL BL              ; Calcula deslocamento da linha
     MOV BX,AX
 
-    MOV CX,2
+    MOV CX,2            ; Tamanho do hidroavião
 
-    MOV GABARITO[BX][SI],'#'
-    ADD BX,20
+    MOV GABARITO[BX][SI],'#' ; Primeira posição
+    ADD BX,20            ; Move para a linha abaixo
 
     HIDROAV_:
-        MOV GABARITO[BX][SI],'#'
+        MOV GABARITO[BX][SI],'#' ; Segunda posição
         INC SI
         LOOP HIDROAV_
-    ADD BX,20 
-    SUB SI,2  
-    MOV GABARITO[BX][SI],'#'
+    ADD BX,20           ; Move para linha abaixo
+    SUB SI,2            ; Volta duas colunas para a posição final
+    MOV GABARITO[BX][SI],'#' ; Terceira posição
     POP_ALL
 ENDM
 
-.DATA                    ; Seção de dados
+.DATA                   ; Seção de dados
     VETORL DB 'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T' ; Letras para colunas
     VETORN DB '1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20' ; Números para linhas
     MATRIZ DB 20 DUP (20 DUP ('*'))  ; Cria uma matriz 20x20 inicializada com '*'
     GABARITO DB 20 DUP (20 DUP ('X')) ; Cria a matriz gabarito
 
-    MSG1 DB 10,13,'Qual a cordenada em que voce quer atirar? (escreva o numero da linha e a letra da coluna, respectivamente, Exps: 1a, 17Q, 6T)',10,13,'$' ;
+    ; Mensagens usadas no jogo
+    MSG1 DB 10,13,'Qual a cordenada em que voce quer atirar?(ex: 1a, 17Q, 6T)',10,13,'$' 
     MSG2 DB 10,13,'Escolha o jogo que voce quer jogar?',10,13,'1)Jogo A',10,13,'2)Jogo B',10,13,'3)Jogo C',10,13,'4)Jogo D',10,13,'5)Jogo E',10,13,'$'
-    MSG3 DB 10,13,'JOGO INVALIDO DIGITE UM NUMERO DE 1 A 5!' ;Mensagem para o jogador
- 
-    NPERMITIDO DB 10,13,'Esta nao e uma escolha possivel! Tente novamente: ',10,13,'$'
-    TIROREPETIDO DB 10,13,'ALERTA! Voce ja atirou nessa posicao! Nao eh possivel dar dois tiros no mesmo lugar! Precione qualquer tecla para continuar.$'
+    MSG3 DB 10,13,'JOGO INVALIDO, DIGITE UM NUMERO DE 1 A 5!',10,13,'$'
 
+    NPERMITIDO DB 10,13,'Esta nao e uma escolha possivel! Tente novamente: ',10,13,'$'
+    TIROREPETIDO DB 10,13,'ALERTA! Voce ja atirou nessa posicao!...$'
     VITORIA DB 'Parabens!! Voce acertou todos o barcos e venceu o jogo!$'
     SAIDAMSG DB 'Voce escolheu sair do jogo! GAME OVER!!$'
     DERROTA DB 'Seus tiros acabaram e voce nao derrubou todos os barcos! GAME OVER!!$'
 
-
 .CODE                    ; Seção de código
     MAIN PROC            
-        MOV AX, @DATA    
+        MOV AX, @DATA    ; Configura o segmento de dados
         MOV DS, AX 
 
-        XOR DX,DX         ;PREPARA A CONDIÇÃO DE VITORIA
+        XOR DX,DX        ; Inicializa a condição de vitória
 
-        CALL PerguntaJogo 
+        CALL PerguntaJogo ; Pergunta ao jogador qual jogo carregar
         PulaLinha
 
-        MOV CX,100        ; Inicializa o contador CX com 10 (número de rodadas)
+        MOV CX,100       ; Inicializa o contador de rodadas com 100 tentativas
 
-        BATALHA:         ; Início do loop de batalha 
-            CALL ImprimirMatriz ; Chama a função para imprimir a matriz
+        ; Loop principal da batalha
+        BATALHA:         
+            CALL ImprimirMatriz ; Imprime o tabuleiro atual
 
             CMP DX,19
-            JE VITORIA_ 
-
+            JE VITORIA_    ; Se DX = 19, o jogador venceu
             CMP DX,20
-            JE SAIDA_
+            JE SAIDA_      ; Se DX = 20, o jogador escolheu sair
 
-            MENSAGEM  MSG1    ; Chama a macro para imprimir a mensagem
+            MENSAGEM MSG1  ; Mensagem para perguntar onde atirar
             CALL Atira     ; Chama a função para processar o tiro
-            PulaLinha      ; Chama a macro para pular uma linha
- 
+            PulaLinha      
 
             LOOP BATALHA   ; Decrementa CX e volta ao início do loop se CX não for zero
-        ;
 
-        ;DERROTA
-        CALL ImprimirMatriz ; Chama a função para imprimir a matriz
+        ; Caso o jogador perca (CX chegou a 0)
+        CALL ImprimirMatriz 
         MENSAGEM DERROTA
         JMP FIM
 
+        ; Caso o jogador vença
         VITORIA_:
         MENSAGEM VITORIA 
         JMP FIM
 
+        ; Caso o jogador escolha sair
         SAIDA_:
         MENSAGEM SAIDAMSG
 
+        ; Fim do jogo
         FIM:
-        MOV AH, 4Ch      ; Função para terminar o programa
-        INT 21H          ; Executa função
-    MAIN ENDP            ; Fim do procedimento principal
+        MOV AH, 4Ch      ; Termina o programa
+        INT 21H          
+    MAIN ENDP     
+          ; Fim do procedimento principal
 
     PerguntaJogo PROC
-        PUSH_ALL
-        MENSAGEM MSG2
-        MOV AH,01H
-        INT 21H
+        PUSH_ALL                ; Salva todos os registradores para preservar o contexto
+        MENSAGEM MSG2           ; Exibe a mensagem perguntando qual jogo o jogador deseja escolher
+        MOV AH,01H              ; Prepara para receber um caractere do teclado
         JOGO:
-            CMP AL,31H
-            JE BOT1
-            JB INVALIDO
-            CMP AL,32H
-            JE BOT2
-            CMP AL,33H
-            JE BOT3
-            CMP AL,34H
-            JE BOT4
-            CMP AL,35H
-            JE BOT5
-            JA INVALIDO
-        INVALIDO:
-            MENSAGEM MSG3
-            JMP JOGO
-            BOT2:
-            JMP BOT2_ 
-            BOT3:
-            JMP BOT3_
-            BOT4:
-            JMP BOT4_
-            BOT5:
-            JMP BOT5_
-        BOT1:;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
-            ENCOURACADO 7,13
-            FRAGATA 20,3
-            FRAGATA 11,16
-            SUBMARINO 17,5
-            HIDROAV 12,6
-            HIDROAV 1,1
-            JMP SAIDA
+            INT 21H             ; Lê a entrada do teclado (caractere do usuário)
+            CMP AL,31H          ; Verifica se o caractere é '1'
+            JE BOT1             ; Se for '1', salta para o bloco de jogo BOT1
+            JB INVALIDO         ; Se o caractere for menor que '1', é inválido
+            CMP AL,32H          ; Verifica se o caractere é '2'
+            JE BOT2             ; Se for '2', salta para o bloco de jogo BOT2
+            CMP AL,33H          ; Verifica se o caractere é '3'
+            JE BOT3             ; Se for '3', salta para o bloco de jogo BOT3
+            CMP AL,34H          ; Verifica se o caractere é '4'
+            JE BOT4             ; Se for '4', salta para o bloco de jogo BOT4
+            CMP AL,35H          ; Verifica se o caractere é '5'
+            JE BOT5             ; Se for '5', salta para o bloco de jogo BOT5
+
+        INVALIDO:               ; Rótulo para entrada inválida
+            MENSAGEM MSG3       ; Exibe mensagem informando que o jogo é inválido
+            JMP JOGO            ; Volta para o início para receber uma nova entrada
+
+        ; Blocos de salto para os diferentes cenários de jogo
+
+            BOT2:               ; Rótulo para o jogo 2
+            JMP BOT2_           ; Salta para o posicionamento de embarcações do jogo 2
+            BOT3:               ; Rótulo para o jogo 3
+            JMP BOT3_           ; Salta para o posicionamento de embarcações do jogo 3
+            BOT4:               ; Rótulo para o jogo 4
+            JMP BOT4_           ; Salta para o posicionamento de embarcações do jogo 4
+            BOT5:               ; Rótulo para o jogo 5
+            JMP BOT5_           ; Salta para o posicionamento de embarcações do jogo 5
+
+        BOT1: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+            ENCOURACADO 7,13    ; Posiciona um encouraçado em (7,13)
+            FRAGATA 20,3        ; Posiciona uma fragata em (20,3)
+            FRAGATA 11,16       ; Posiciona uma fragata em (11,16)
+            SUBMARINO 17,5      ; Posiciona um submarino em (17,5)
+            HIDROAV 12,6        ; Posiciona um hidroavião em (12,6)
+            HIDROAV 1,1         ; Posiciona um hidroavião em (1,1)
+            JMP SAIDA           ; Salta para a saída após posicionar os navios
+
         BOT2_:
-            ENCOURACADO 13,5
-            FRAGATA 10,17
-            FRAGATA 4,10
-            SUBMARINO 18,13
-            HIDROAV 13,13
-            HIDROAV 8,6
-            JMP SAIDA
+            ENCOURACADO 13,5    ; Posiciona um encouraçado em (13,5)
+            FRAGATA 10,17       ; Posiciona uma fragata em (10,17)
+            FRAGATA 4,10        ; Posiciona uma fragata em (4,10)
+            SUBMARINO 18,13     ; Posiciona um submarino em (18,13)
+            HIDROAV 13,13       ; Posiciona um hidroavião em (13,13)
+            HIDROAV 8,6         ; Posiciona um hidroavião em (8,6)
+            JMP SAIDA           ; Salta para a saída após posicionar os navios
 
         BOT3_:
-            ENCOURACADO 16,13
-            FRAGATA 14,5
-            FRAGATA 9,14
-            SUBMARINO 1,5
-            HIDROAV 3,6
-            HIDROAV 10,3
-            JMP SAIDA
+            ENCOURACADO 16,13   ; Posiciona um encouraçado em (16,13)
+            FRAGATA 14,5        ; Posiciona uma fragata em (14,5)
+            FRAGATA 9,14        ; Posiciona uma fragata em (9,14)
+            SUBMARINO 1,5       ; Posiciona um submarino em (1,5)
+            HIDROAV 3,6         ; Posiciona um hidroavião em (3,6)
+            HIDROAV 10,3        ; Posiciona um hidroavião em (10,3)
+            JMP SAIDA           ; Salta para a saída após posicionar os navios
 
         BOT4_:
-            ENCOURACADO 12,11
-            FRAGATA 14,2
-            FRAGATA 7,7
-            SUBMARINO 2,3
-            HIDROAV 4,15
-            HIDROAV 15,12
-            JMP SAIDA
+            ENCOURACADO 12,11   ; Posiciona um encouraçado em (12,11)
+            FRAGATA 14,2        ; Posiciona uma fragata em (14,2)
+            FRAGATA 7,7         ; Posiciona uma fragata em (7,7)
+            SUBMARINO 2,3       ; Posiciona um submarino em (2,3)
+            HIDROAV 4,15        ; Posiciona um hidroavião em (4,15)
+            HIDROAV 15,12       ; Posiciona um hidroavião em (15,12)
+            JMP SAIDA           ; Salta para a saída após posicionar os navios
+
         BOT5_:
-            ENCOURACADO 14,16
-            FRAGATA 20,16
-            FRAGATA 1,2
-            SUBMARINO 6,8
-            HIDROAV 3,14
-            HIDROAV 11,7
-            JMP SAIDA
+            ENCOURACADO 14,16   ; Posiciona um encouraçado em (14,16)
+            FRAGATA 20,16       ; Posiciona uma fragata em (20,16)
+            FRAGATA 1,2         ; Posiciona uma fragata em (1,2)
+            SUBMARINO 6,8       ; Posiciona um submarino em (6,8)
+            HIDROAV 3,14        ; Posiciona um hidroavião em (3,14)
+            HIDROAV 11,7        ; Posiciona um hidroavião em (11,7)
+            JMP SAIDA           ; Salta para a saída após posicionar os navios
+
         SAIDA:
-        POP_ALL
-        RET
+        POP_ALL                 ; Restaura todos os registradores salvos
+        RET                     ; Retorna do procedimento
     PerguntaJogo ENDP
 
+    ImprimirMatriz PROC          ; Início do procedimento para imprimir a matriz 
+            PUSH_ALL             ; Salva todos os registradores para preservar o contexto           
 
-    ImprimirMatriz PROC  ; Início do procedimento para imprimir a matriz
-            PUSH_ALL
+            XOR BX,BX            ; Zera o registrador BX (índice da linha da matriz)
+            XOR DI,DI            ; Zera o registrador DI (índice dos vetores auxiliares)
+            MOV AH, 02h          ; Função para imprimir um caractere
 
-            XOR BX,BX        ; Zera o registrador BX (índice da linha da matriz)
-            XOR DI,DI        ; Zera o registrador DI (índice dos vetores auxiliares)
-            MOV AH, 02h      ; Função para imprimir um caractere
+            MOV CX,20            ; Inicializa CX com 20 (número de colunas)
 
-            MOV CX,20        ; Inicializa CX com 20 (número de colunas)
-
-            ESPAÇO           ; Chama a macro para imprimir três espaços antes do vetor de letras
+            ESPAÇO               ; Chama a macro para imprimir três espaços antes do vetor de letras
             ESPAÇO
             ESPAÇO
 
-        VLETRA:               ; Início do loop para imprimir o vetor de letras referente as colunas
-            MOV DL,VETORL[DI] ; Carrega a letra correspondente da coluna em DL
-            INT 21H          ; Executa função
-            INC DI           ; Incrementa DI para a próxima letra
+        VLETRA:                 ; Início do loop para imprimir o vetor de letras referente às colunas
+            MOV DL,VETORL[DI]   ; Carrega a letra correspondente da coluna em DL
+            INT 21H             ; Executa função para imprimir o caractere em DL
+            INC DI              ; Incrementa DI para a próxima letra
 
-            ESPAÇO           ; Imprime um espaço entre as letras
+            ESPAÇO              ; Imprime um espaço entre as letras
 
-            LOOP VLETRA      ; Repete até que todas as letras tenham sido impressas
+            LOOP VLETRA         ; Repete até que todas as letras tenham sido impressas
 
-            PulaLinha        ; Chama a macro para pular uma linha
+            PulaLinha           ; Chama a macro para pular uma linha
 
-            XOR DI,DI        ; Reseta DI para o índice das linhas
-        FOR:                  ; Início do loop para imprimir números e linhas
-            XOR SI, SI       ; Zera o registrador SI (índice da coluna)
+            XOR DI,DI           ; Reseta DI para o índice das linhas
+        FOR:                    ; Início do loop para imprimir números e linhas
+            XOR SI, SI          ; Zera o registrador SI (índice da coluna)
             
-            MOV CX, 20       ; Inicializa CX com 20 (número de colunas)
+            MOV CX, 20          ; Inicializa CX com 20 (número de colunas)
 
-            CMP DI,8         ; Verifica se DI é maior que 8
-            JA SKIP          ; Se DI > 8, não gera espaço antes do número referente a linha
-            ESPAÇO           ; Imprime um espaço antes dos números se DI <= 8
+            CMP DI,8            ; Verifica se DI é maior que 8 (8 representa a 9° linha da matriz)
+            JA SKIP             ; Se DI > 8, não gera espaço antes do número referente à linha
+            ESPAÇO              ; Imprime um espaço antes dos números se DI <= 8
         SKIP:
             
-            MOV DL,VETORN[DI] ; Carrega o número correspondente da linha em DL
-            INT 21h          ; Executa função
-            INC DI           ; Incrementa DI para o próximo número
+            MOV DL,VETORN[DI]   ; Carrega o número correspondente da linha em DL
+            INT 21h             ; Executa função para imprimir o caractere em DL
+            INC DI              ; Incrementa DI para o próximo número
 
-            CMP DI,9        ; Verifica se DI é menor ou igual a 9
-            JBE FOR2         ; Pula para a impressão da matriz
-        VNUMERO:             ; Executa VNUMERO se DI for maior que nove (para imprimir os dois números refferente a linha)
-            MOV DL,VETORN[DI] ; Carrega o número correspondente em DL
-            INT 21H          ; Executa função
-            INC DI           ; Incrementa DI
+            CMP DI,9            ; Verifica se DI é menor ou igual a 9
+            JBE FOR2            ; Pula para a impressão da matriz se DI <= 9
 
-        FOR2:                 ; Início do loop para imprimir a matriz
-            ESPAÇO           ; Imprime um espaço entre os valores da matriz
+        VNUMERO:                ; Caso DI > 9, imprime os dois dígitos do número da linha
+            MOV DL,VETORN[DI]   ; Carrega o número correspondente em DL
+            INT 21H             ; Executa função para imprimir o caractere em DL
+            INC DI              ; Incrementa DI
+
+        FOR2:                   ; Início do loop para imprimir a matriz
+            ESPAÇO              ; Imprime um espaço entre os valores da matriz
 
             MOV DL, MATRIZ[BX][SI] ; Carrega o valor da matriz em DL
-            INT 21h          ; Executa função
-            INC SI           ; Incrementa SI para a próxima coluna  
+            INT 21h             ; Executa função para imprimir o caractere em DL
+            INC SI              ; Incrementa SI para a próxima coluna  
                     
-            LOOP FOR2        ; Repete para as 20 colunas
+            LOOP FOR2           ; Repete para as 20 colunas
 
-            PulaLinha        ; Chama a macro para pular uma linha
+            PulaLinha           ; Chama a macro para pular uma linha
 
-            ADD BX,20        ; Incrementa BX para a próxima linha
-            CMP BX,400       ; Verifica se BX atingiu 400 (20x20)
-            JL FOR           ; Se BX < 400, continua o loop para imprimir mais linhas
+            ADD BX,20           ; Incrementa BX para a próxima linha
+            CMP BX,400          ; Verifica se BX atingiu 400 (20x20)
+            JL FOR              ; Se BX < 400, continua o loop para imprimir mais linhas
 
-            POP_ALL
-            RET               ; Retorna ao chamador
-    ImprimirMatriz ENDP   ; Fim da função ImprimirMatriz
+            POP_ALL             ; Restaura todos os registradores salvos
+            RET                 ; Retorna ao chamador
+    ImprimirMatriz ENDP         ; Fim da função ImprimirMatriz
+ 
+    Atira PROC                  ; Início da função para processar um tiro 
+        XOR BH,BH               ; Zera o registrador BH para uso posterior
 
-    Atira PROC            ; Início da função para processar um tiro 
-        XOR BH,BH        ; Zera o registrador BH
-
-        MOV AH,1         ; Função para ler um caractere da entrada
+        MOV AH,1                ; Configura para ler um caractere da entrada
         VOLTA_NPERMITIDO:
-        INT 21H          ; Executa função
+            INT 21H             ; Lê o primeiro caractere (número da linha)
 
-        CMP AL, 1BH      ;Compara com esc
-        JE SAIDA2
+            CMP AL, 1BH         ; Verifica se a tecla ESC foi pressionada
+            JE SAIDA2           ; Se for ESC, sai do procedimento e encerra o jogo
 
-        CMP AL,39H
-        JA NPERMITIDO_ATIRA
-        CMP AL,31H
-        JB NPERMITIDO_ATIRA 
+            CMP AL,39H          ; Verifica se o número está fora do intervalo permitido
+            JA NPERMITIDO_ATIRA
+            CMP AL,31H          ; Verifica se o número está abaixo do permitido
+            JB NPERMITIDO_ATIRA 
 
-        AND AL,0FH      ; Máscara para obter o número da linha 
-        MOV BL,AL        ; Armazena o número da linha em BL
+            AND AL,0FH          ; Converte o número ASCII para o correspondente valor numérico
+            MOV BL,AL           ; Armazena o número da linha em BL
 
-        INT 21H          ; Executa função
+            INT 21H             ; Lê o próximo caractere (número ou letra)
 
-        CMP AL, 1BH      ;Compara com esc
-        JE SAIDA2 
+            CMP AL, 1BH         ; Verifica novamente se a tecla ESC foi pressionada
+            JE SAIDA2           ; Sai do procedimento se for ESC, e encerra o jogo
 
-        CMP AL,39H       ; Compara seo valor do caractere está acima de 3Ah, e etiver é uma letra, e não é outro número
-        JA LETRA         ; Se estiver, vai para processar letra
-        CMP AL,30H
-        JB NPERMITIDO_ATIRA 
+            CMP AL,39H          ; Verifica se o caractere é uma letra ou está fora do intervalo de números
+            JA LETRA            ; Se for uma letra, salta para o processamento de letras
+            CMP AL,30H          ; Verifica se o caractere é válido
+            JB NPERMITIDO_ATIRA 
 
-        AND AL,0FH      ; Máscara para obter o segundo número da linha
-        PUSH AX          ; Salva AX na pilha
-        MOV AL,10       ; Carrega 10 para multiplicação
-        MUL BL           ; Multiplica 10 pelo número da linha
-        MOV BX,AX        ; Armazena o resultado em BX
-        POP AX           ; Restaura AX para o segundo número digitado
+            CMP BL,02           ; Verifica se o primeiro numero digitado é 2, se for, então só é possível digitar 0 posteriormente, já que a maior linha possível é 20  
+            JNE NVINTE          ; Se não for o 2, pula para NVINTE
 
-        ADD BL,AL        ; Soma o primeiro número multiplicado por 10 com o segundo (Entrada de Decimal)
+            CMP AL,30H          ; Se for o 2, verifica se o número é '0'
+            JNE NPERMITIDO_ATIRA ; Se não for 0, avisa que não é permitido
 
-        INT 21H          ; Executa função 
+            NVINTE:
+            AND AL,0FH       ; Converte o número ASCII para o correspondente valor numérico
+            PUSH AX          ; Salva o valor atual de AX na pilha
+            MOV AL,10        ; Carrega o valor 10 para multiplicação
+            MUL BL           ; Multiplica 10 pelo número da linha armazenado em BL
+            MOV BX,AX        ; Armazena o resultado em BX
+            POP AX           ; Restaura o valor original de AX da pilha
 
-        CMP AL, 1BH      ;Compara com esc
-        JE SAIDA2 
-        JMP LETRA
-        
-            SAIDA2:
-            JMP SAIDAicondicional
-    LETRA:
-        CMP AL,41H       ; Compara com 'A' 
-        JB NPERMITIDO_ATIRA
+            ADD BL,AL        ; Soma o resultado da multiplicação com o segundo número
 
-        CMP AL,61H      ; Compara se o valor de AL está acima do valor da ascii de 'A'
-        JAE MINUSCULA     ; Se sim, vai para tratar como letra minúscula 
+            INT 21H          ; Lê o próximo caractere para validação final
 
-        CMP AL,5AH  ;'Z'
-        JA NPERMITIDO_ATIRA
+            CMP AL, 1BH      ; Verifica novamente se a tecla ESC foi pressionada
+            JE SAIDA2        ; Sai se for ESC e encerra o jogo
+            JMP LETRA        ; Salta para o processamento da letra
+            
+            SAIDA2:          ; Transformação do jump condicional para o incondicional             
+            JMP SAIDAincondicional ; Salta para a saída, trecho de código motivado por limitações dos jumps condicionais
 
-        PUSH AX          ; Salva AX na pilha
-        DEC BL           ; Decrementa BL para indexar corretamente
+        LETRA:
+            CMP AL,41H       ; Compara com o valor ASCII da letra 'A'
+            JB NPERMITIDO_ATIRA ; Se for menor, é inválido
 
-        MOV AL,20        ; Carrega 20 para multiplicação
-        MUL BL           ; Multiplica 20 pelo número da linha (para correponder corretamente com a linha da matriz)
-        MOV BX,AX        ; Armazena o resultado em BX
-        POP AX           ; Restaura AX
- 
-        SUB AL,41H       ; Se não, converte letra maiúscula para índice
-        JMP EXITLETRA     ; Pula para a saída
+            CMP AL,61H       ; Verifica se é uma letra minúscula comparando com o valor ASCII da letra 'a'
+            JAE MINUSCULA    ; Se for, salta para o processamento de minúsculas
 
-    MINUSCULA:
+            CMP AL,54H       ; Verifica se é maior que 'T' (ultima coluna do tabuleiro)
+            JA NPERMITIDO_ATIRA ; Se for, é inválido
 
-        CMP AL,7AH
-        JA NPERMITIDO_ATIRA
+            PUSH AX          ; Salva o valor atual de AX na pilha
+            DEC BL           ; Decrementa BL para ajustar o índice da linha
 
-        PUSH AX          ; Salva AX na pilha
-        DEC BL           ; Decrementa BL para indexar corretamente
+            MOV AL,20        ; Carrega o valor 20 para multiplicação (tamanho da linha)
+            MUL BL           ; Multiplica 20 pelo número da linha
+            MOV BX,AX        ; Armazena o resultado em BX
+            POP AX           ; Restaura o valor original de AX da pilha
+    
+            SUB AL,41H       ; Converte a letra maiúscula para o índice da coluna
+            JMP EXITLETRA    ; Salta para a saída
 
-        MOV AL,20        ; Carrega 20 para multiplicação
-        MUL BL           ; Multiplica 20 pelo número da linha (para correponder corretamente com a linha da matriz)
-        MOV BX,AX        ; Armazena o resultado em BX
-        POP AX           ; Restaura AX
+        MINUSCULA:
+            CMP AL,74H       ; Compara com o valor ASCII da letra 't'
+            JA NPERMITIDO_ATIRA ; Se for maior que 't', é inválido
 
-        SUB AL,61H       ; Converte letra minúscula para índice
+            PUSH AX          ; Salva o valor atual de AX na pilha
+            DEC BL           ; Decrementa BL para ajustar o índice da linha
 
-    EXITLETRA:
-        XOR AH,AH        ; Zera AH para usar AX como endereço
-        MOV SI,AX        ; Move o índice da coluna para SI
+            MOV AL,20        ; Carrega o valor 20 para multiplicação (tamanho da linha)
+            MUL BL           ; Multiplica 20 pelo número da linha
+            MOV BX,AX        ; Armazena o resultado em BX
+            POP AX           ; Restaura o valor original de AX da pilha
 
-        CMP MATRIZ[BX][SI],'*'
-        JNE TIROREPETIDO_
+            SUB AL,61H       ; Converte a letra minúscula para o índice da coluna
 
-        MOV AH,GABARITO[BX][SI]
-        MOV MATRIZ[BX][SI],AH  ; Marca a posição atingida na matriz com o que esta na mesma posição da matriz gabarito
+        EXITLETRA:
+            XOR AH,AH        ; Zera AH para usar AX como endereço de coluna
+            MOV SI,AX        ; Move o índice da coluna para SI
 
-        CMP AH, '#'
-        JE ACERTO
+            CMP MATRIZ[BX][SI],'*' ; Verifica se o alvo já foi atingido 
+            JNE TIROREPETIDO_
 
-        RETORNO: 
-        RET               ; Retorna ao chamador
- 
+            MOV AH,GABARITO[BX][SI] ; Carrega o valor correspondente da matriz gabarito para AH
+            MOV MATRIZ[BX][SI],AH   ; Atualiza a matriz com o valor da posição atingida do gabarito
+
+            CMP AH, '#'            ; Verifica se o tiro foi um acerto ('#' representa um acerto)
+            JE ACERTO              ; Se sim, salta para a rotina de acerto
+
+            RETORNO: 
+            RET                    ; Retorna ao chamador após processar o tiro
+
         NPERMITIDO_ATIRA:
-            MENSAGEM NPERMITIDO
-            JMP VOLTA_NPERMITIDO
+            MENSAGEM NPERMITIDO    ; Exibe a mensagem de entrada não permitida
+            JMP VOLTA_NPERMITIDO   ; Retorna ao ponto de entrada para nova tentativa
 
         ACERTO: 
-            INC CX  
-            INC DX  
-            JMP RETORNO   
+            INC CX                 ; Incrementa o contador de acertos gerais
+            INC DX                 ; Incrementa o contador específico para verificação da condição de vitória
+            JMP RETORNO            ; Retorna após registrar o acerto
 
         TIROREPETIDO_:
-            PUSH AX
-            MENSAGEM TIROREPETIDO
-            MOV AH,01
-            INT 21H
-            POP AX
-            JMP RETORNO  
+            PUSH AX                ; Salva o valor atual de AX na pilha
+            MENSAGEM TIROREPETIDO  ; Exibe a mensagem de tiro repetido
+            MOV AH,01              ; Prepara para ler um caractere para continuar
+            INT 21H                ; Espera por entrada do usuário
+            POP AX                 ; Restaura o valor original de AX
+            JMP RETORNO            ; Retorna ao chamador após tratar o tiro repetido
 
-        SAIDAicondicional:
-            MOV DX,20
-            INC CX
-            JMP RETORNO 
-    ATIRA ENDP   
-    
+        SAIDAincondicional:
+            MOV DX,20              ; Carrega o valor 20 em DX para uso posterior
+            INC CX                 ; Incrementa o contador CX
+            JMP RETORNO            ; Retorna ao chamador após sair de forma condicional
+
+    ATIRA ENDP                ; Fim do procedimento Atira
+ 
 END MAIN  
