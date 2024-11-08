@@ -174,7 +174,7 @@ ENDM
         BATALHA:         ; Início do loop de batalha 
             CALL ImprimirMatriz ; Chama a função para imprimir a matriz
 
-            CMP DX,4
+            CMP DX,19
             JE VITORIA_ 
 
             CMP DX,20
@@ -464,9 +464,7 @@ ENDM
         SAIDAicondicional:
             MOV DX,20
             INC CX
-            JMP RETORNO
-
-
-
+            JMP RETORNO 
     ATIRA ENDP   
+    
 END MAIN  
