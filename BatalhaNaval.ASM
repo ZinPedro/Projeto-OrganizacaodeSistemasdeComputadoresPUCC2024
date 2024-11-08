@@ -334,7 +334,7 @@ ENDM
 
         RETORNO: 
         RET               ; Retorna ao chamador
-
+ 
         NPERMITIDO_ATIRA:
             MENSAGEM NPERMITIDO
             JMP VOLTA_NPERMITIDO
@@ -351,5 +351,5 @@ ENDM
             INT 21H
             POP AX
             JMP RETORNO      
-    ATIRA ENDP       
+    ATIRA ENDP   
 END MAIN  
