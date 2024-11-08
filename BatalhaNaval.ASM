@@ -44,8 +44,8 @@ MENSAGEM MACRO MSG         ; Início da macro para imprimir uma mensagem
     POP_ALL             ; Restaura o valor original de AX
 ENDM                     ; Fim da macro
 
-ENCOURACADO MACRO  X, Y
-    LOCAL ENCOURACADO_
+ENCOURACADO MACRO  X, Y 
+    LOCAL ENCOURACADO_  
     PUSH_ALL
     
     MOV SI,Y
@@ -90,8 +90,8 @@ FRAGATA MACRO  X, Y
     POP_ALL
 ENDM
 
-SUBMARINO MACRO  X, Y
-    LOCAL SUBMARINO_
+SUBMARINO MACRO  X, Y 
+    LOCAL SUBMARINO_ 
     PUSH_ALL
     
     MOV SI,Y
@@ -113,8 +113,8 @@ SUBMARINO MACRO  X, Y
     POP_ALL
 ENDM
 
-HIDROAV MACRO X,Y
-    LOCAL HIDROAV_
+HIDROAV MACRO X,Y 
+    LOCAL HIDROAV_ 
     PUSH_ALL
     
     MOV SI,Y
@@ -147,31 +147,31 @@ ENDM
     MATRIZ DB 20 DUP (20 DUP ('*'))  ; Cria uma matriz 20x20 inicializada com '*'
     GABARITO DB 20 DUP (20 DUP ('X')) ; Cria a matriz gabarito
 
-    MSG1 DB 10,13,'Qual a cordenada em que voce quer atirar? (escreva o numero da linha e a letra da coluna, respectivamente, Exps: 1a, 17Q, 6T)',10,13,'$' ; Mensagem para o jogador
+    MSG1 DB 10,13,'Qual a cordenada em que voce quer atirar? (escreva o numero da linha e a letra da coluna, respectivamente, Exps: 1a, 17Q, 6T)',10,13,'$' ;
+    MSG2 DB 10,13,'Escolha o jogo que voce quer jogar?',10,13,'1)Jogo A',10,13,'2)Jogo B',10,13,'3)Jogo C',10,13,'4)Jogo D',10,13,'5)Jogo E',10,13,'$'
+    MSG3 DB 10,13,'JOGO INVALIDO DIGITE UM NUMERO DE 1 A 5!' ;Mensagem para o jogador
+ 
     NPERMITIDO DB 10,13,'Esta nao e uma escolha possivel! Tente novamente: ',10,13,'$'
     TIROREPETIDO DB 10,13,'ALERTA! Voce ja atirou nessa posicao! Nao eh possivel dar dois tiros no mesmo lugar! Precione qualquer tecla para continuar.$'
 
     VITORIA DB 'Parabens!! Voce acertou todos o barcos e venceu o jogo!$'
     SAIDAMSG DB 'Voce escolheu sair do jogo! GAME OVER!!$'
     DERROTA DB 'Seus tiros acabaram e voce nao derrubou todos os barcos! GAME OVER!!$'
+
+
 .CODE                    ; Seção de código
     MAIN PROC            
         MOV AX, @DATA    
-        MOV DS, AX  
+        MOV DS, AX 
 
         XOR DX,DX         ;PREPARA A CONDIÇÃO DE VITORIA
- 
-        ENCOURACADO 1,1
-        FRAGATA 2,1
-        SUBMARINO 3,1 
-        SUBMARINO 4,1 
-        HIDROAV 5,1 
-        HIDROAV 1,5 
 
+        CALL PerguntaJogo 
+        PulaLinha
 
-        MOV CX,10       ; Inicializa o contador CX com 10 (número de rodadas)
+        MOV CX,100        ; Inicializa o contador CX com 10 (número de rodadas)
 
-        BATALHA:         ; Início do loop de batalha  
+        BATALHA:         ; Início do loop de batalha 
             CALL ImprimirMatriz ; Chama a função para imprimir a matriz
 
             CMP DX,4
@@ -204,6 +204,83 @@ ENDM
         MOV AH, 4Ch      ; Função para terminar o programa
         INT 21H          ; Executa função
     MAIN ENDP            ; Fim do procedimento principal
+
+    PerguntaJogo PROC
+        PUSH_ALL
+        MENSAGEM MSG2
+        MOV AH,01H
+        INT 21H
+        JOGO:
+            CMP AL,31H
+            JE BOT1
+            JB INVALIDO
+            CMP AL,32H
+            JE BOT2
+            CMP AL,33H
+            JE BOT3
+            CMP AL,34H
+            JE BOT4
+            CMP AL,35H
+            JE BOT5
+            JA INVALIDO
+        INVALIDO:
+            MENSAGEM MSG3
+            JMP JOGO
+            BOT2:
+            JMP BOT2_ 
+            BOT3:
+            JMP BOT3_
+            BOT4:
+            JMP BOT4_
+            BOT5:
+            JMP BOT5_
+        BOT1:;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+            ENCOURACADO 7,13
+            FRAGATA 20,3
+            FRAGATA 11,16
+            SUBMARINO 17,5
+            HIDROAV 12,6
+            HIDROAV 1,1
+            JMP SAIDA
+        BOT2_:
+            ENCOURACADO 13,5
+            FRAGATA 10,17
+            FRAGATA 4,10
+            SUBMARINO 18,13
+            HIDROAV 13,13
+            HIDROAV 8,6
+            JMP SAIDA
+
+        BOT3_:
+            ENCOURACADO 16,13
+            FRAGATA 14,5
+            FRAGATA 9,14
+            SUBMARINO 1,5
+            HIDROAV 3,6
+            HIDROAV 10,3
+            JMP SAIDA
+
+        BOT4_:
+            ENCOURACADO 12,11
+            FRAGATA 14,2
+            FRAGATA 7,7
+            SUBMARINO 2,3
+            HIDROAV 4,15
+            HIDROAV 15,12
+            JMP SAIDA
+        BOT5_:
+            ENCOURACADO 14,16
+            FRAGATA 20,16
+            FRAGATA 1,2
+            SUBMARINO 6,8
+            HIDROAV 3,14
+            HIDROAV 11,7
+            JMP SAIDA
+        SAIDA:
+        POP_ALL
+        RET
+    PerguntaJogo ENDP
+
 
     ImprimirMatriz PROC  ; Início do procedimento para imprimir a matriz
             PUSH_ALL
@@ -278,7 +355,7 @@ ENDM
         INT 21H          ; Executa função
 
         CMP AL, 1BH      ;Compara com esc
-        JE SAIDA 
+        JE SAIDA2
 
         CMP AL,39H
         JA NPERMITIDO_ATIRA
@@ -291,7 +368,7 @@ ENDM
         INT 21H          ; Executa função
 
         CMP AL, 1BH      ;Compara com esc
-        JE SAIDA 
+        JE SAIDA2 
 
         CMP AL,39H       ; Compara seo valor do caractere está acima de 3Ah, e etiver é uma letra, e não é outro número
         JA LETRA         ; Se estiver, vai para processar letra
@@ -310,10 +387,10 @@ ENDM
         INT 21H          ; Executa função 
 
         CMP AL, 1BH      ;Compara com esc
-        JE SAIDA 
+        JE SAIDA2 
         JMP LETRA
         
-            SAIDA:
+            SAIDA2:
             JMP SAIDAicondicional
     LETRA:
         CMP AL,41H       ; Compara com 'A' 
