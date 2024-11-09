@@ -189,7 +189,7 @@ ENDM
             CMP DX,19
             JE VITORIA_    ; Se DX = 19, o jogador venceu
             CMP DX,20
-            JE SAIDA_1      ; Se DX = 20, o jogador escolheu sair
+            JE SAIDA_ANCORA      ; Se DX = 20, o jogador escolheu sair
 
             MENSAGEM TIROMSG  ; Mensagem para perguntar onde atirar
             MENSAGEM TENRESMSG1 ;Mensagem para numeros de tentativas restantes
@@ -205,7 +205,7 @@ ENDM
         MENSAGEM DERROTA
         JMP FIM
 
-            SAIDA_1:
+            SAIDA_ANCORA:  ; Ancora para saída por causa do alcance do salto condicional
             JMP SAIDA_ 
 
         ; Caso o jogador vença
@@ -384,22 +384,31 @@ ENDM
             JE SAIDA2           ; Se for ESC, sai do procedimento e encerra o jogo
 
             CMP AL,39H          ; Verifica se o número está fora do intervalo permitido
-            JA NPERMITIDO_ATIRA
+            JA NPERMITIDO_ATIRA_ANCORA
             CMP AL,31H          ; Verifica se o número está abaixo do permitido
-            JB NPERMITIDO_ATIRA 
+            JB NPERMITIDO_ATIRA_ANCORA  ; Ancora para NPERMITIDO_ATIRA por causa do alcance do salto condicional
+            JMP CONTINUA_ATIRA
 
+            NPERMITIDO_ATIRA_ANCORA:    ; Ancora para NPERMITIDO_ATIRA por causa do alcance do salto condicional
+             JMP NPERMITIDO_ATIRA       ; Salto incondicional para NPERMITIDO_ATIRA
+
+            CONTINUA_ATIRA:
             AND AL,0FH          ; Converte o número ASCII para o correspondente valor numérico
             MOV BL,AL           ; Armazena o número da linha em BL
 
+            BACKSPACE_CHECKPOINT:   ; Checkpoint para backspace caso o usuário de beckspace no segundo numero digitado
             INT 21H             ; Lê o próximo caractere (número ou letra)
 
             CMP AL, 1BH         ; Verifica novamente se a tecla ESC foi pressionada
             JE SAIDA2           ; Sai do procedimento se for ESC, e encerra o jogo
 
+            CMP AL,08H          ; Verifica se a tecla BACKSPACE foi pressionada
+            JE BACKSPACE1       ; Se backspace foi precionada, pula para BACKSPACE1    
+
             CMP AL,39H          ; Verifica se o caractere é uma letra ou está fora do intervalo de números
             JA LETRA            ; Se for uma letra, salta para o processamento de letras
             CMP AL,30H          ; Verifica se o caractere é válido
-            JB NPERMITIDO_ATIRA 
+            JB NPERMITIDO_ATIRA_ANCORA  ; Ancora para NPERMITIDO_ATIRA por causa do alcance do salto condicional
 
             CMP BL,02           ; Verifica se o primeiro numero digitado é 2, se for, então só é possível digitar 0 posteriormente, já que a maior linha possível é 20  
             JNE NVINTE          ; Se não for o 2, pula para NVINTE
@@ -415,16 +424,35 @@ ENDM
             MOV BX,AX        ; Armazena o resultado em BX
             POP AX           ; Restaura o valor original de AX da pilha
 
-            ADD BL,AL        ; Soma o resultado da multiplicação com o segundo número
+            ADD BL,AL        ; Soma o resultado da multiplicação com o segundo número 
 
             INT 21H          ; Lê o próximo caractere para validação final
 
             CMP AL, 1BH      ; Verifica novamente se a tecla ESC foi pressionada
             JE SAIDA2        ; Sai se for ESC e encerra o jogo
+
+            CMP AL,08H       ; Verifica se a tecla BACKSPACE foi pressionada
+            JE BACKSPACE2    ; Se backspace foi precionada, pula para BACKSPACE2 
+
             JMP LETRA        ; Salta para o processamento da letra
             
             SAIDA2:          ; Transformação do jump condicional para o incondicional             
             JMP SAIDAincondicional ; Salta para a saída, trecho de código motivado por limitações dos jumps condicionais
+
+            BACKSPACE1:      ; Backspace1 caso o usuário de backspace no primeiro número digitado 
+            CALL BACKSPACE      ; Chama o procedimento que exclui o caractere digitado na tela
+            JMP VOLTA_NPERMITIDO    ; Volta para entrada do primeiro numero novamente
+
+            BACKSPACE2:      ; Backspace2 caso o usuário de backspace no segundo número digitado 
+            PUSH AX
+                MOV AX,BX    ; Retorna o valor de BX que havia sido alterado pelo sdegundo numero
+                MOV BX,10   
+                DIV BL  
+                XOR AH,AH
+                MOV BX,AX 
+            POP AX    
+            CALL BACKSPACE   ; Chama o procedimento que exclui o caractere digitado na tela
+            JMP BACKSPACE_CHECKPOINT    ; Volta para entrada do segundo numero novamente
 
         LETRA:
             CMP AL,41H       ; Compara com o valor ASCII da letra 'A'
@@ -501,34 +529,47 @@ ENDM
 
     ATIRA ENDP                ; Fim do procedimento Atira
  
-    TentativasRestantes PROC 
-        PUSH_ALL  
+    TentativasRestantes PROC          ; Início do procedimento para exibir o número de tentativas restantes
+        PUSH_ALL                 ; Salva todos os registradores para preservar o contexto
 
-        MOV BX,10  
-        MOV AX,CX 
-        XOR CX,CX
+        MOV BX,10               ; Define BX como 10 (para divisão por 10, usada na conversão de números)
+        MOV AX,CX               ; Move o valor de CX (número de tentativas restantes) para AX
+        XOR CX,CX               ; Zera o registrador CX (usado como contador de dígitos)
 
-        REPEAT_TENTRES:
-            XOR DX,DX 
+        REPEAT_TENTRES:             ; Loop para converter o número de tentativas para dígitos individuais
+            XOR DX,DX               ; Zera DX antes da divisão
 
-            DIV BL 
-            MOV DL,AH 
-            PUSH DX  
-            XOR AH,AH 
-            INC CX  
-            TEST AX,AX
-        JNZ REPEAT_TENTRES
+            DIV BL                  ; Divide AX por 10, resultado em AL, resto em AH
+            MOV DL,AH               ; Armazena o valor do resto (dígito) em DL
+            PUSH DX                 ; Salva o dígito convertido na pilha
+            XOR AH,AH               ; Zera o registrador AH
+            INC CX                  ; Incrementa CX (conta o número de dígitos)
+            TEST AX,AX              ; Testa se o valor em AX é zero
+            JNZ REPEAT_TENTRES      ; Se AX não for zero, repete o loop
 
-            MOV AH,02  
+            MOV AH,02H              ; Configura para imprimir um caractere na tela
 
-        LOOP_TENTRES:
-            POP DX 
-            OR DL,30H
-            INT 21H
-        LOOP LOOP_TENTRES       
+        LOOP_TENTRES:               ; Loop para imprimir os dígitos em ordem correta
+            POP DX                  ; Recupera o próximo dígito da pilha
+            OR DL,30H               ; Converte o dígito para o código ASCII ('0' - '9')
+            INT 21H                 ; Imprime o dígito na tela
+            LOOP LOOP_TENTRES       ; Repete o loop até que todos os dígitos sejam impressos
 
-        POP_ALL
-        RET
-    TentativasRestantes ENDP         
+        POP_ALL                 ; Restaura todos os registradores
+        RET                     ; Retorna do procedimento
+    TentativasRestantes ENDP    ; Fim do procedimento
+     
     
+    BACKSPACE PROC          ; Procedimento para representar a movimentação do backspace na tela
+        PUSH_ALL            ; Salva todos os registradores para preservar o contexto
+            MOV AH,02 
+ 
+            MOV DL,20H      ; Imprime espaço (para tirar o ultimo caractere digitado)
+            INT 21H
+
+            MOV DL,08       ; Imprime backspace (para voltar o ponteiro de digitação um digito)  
+            INT 21H 
+        POP_ALL             ; Restaura todos os registradores salvos
+        RET                 ; Retorna ao chamador após processar o backspace
+    BACKSPACE ENDP    
 END MAIN  
