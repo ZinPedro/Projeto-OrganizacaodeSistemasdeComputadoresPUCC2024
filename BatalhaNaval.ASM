@@ -157,7 +157,10 @@ ENDM
     GABARITO DB 20 DUP (20 DUP ('X')) ; Cria a matriz gabarito
 
     ; Mensagens usadas no jogo
-    MSG1 DB 10,13,'Qual a cordenada em que voce quer atirar?(ex: 1a, 17Q, 6T)',10,13,'$' 
+    TIROMSG DB 10,13,'Qual a cordenada em que voce quer atirar?(ex: 1a, 17Q, 6T)',10,13,'$' 
+    TENRESMSG1 DB '(Tentativas Restantes: $' 
+    TENRESMSG2 DB ')',10,13,'$'  
+ 
     MSG2 DB 10,13,'Escolha o jogo que voce quer jogar?',10,13,'1)Jogo A',10,13,'2)Jogo B',10,13,'3)Jogo C',10,13,'4)Jogo D',10,13,'5)Jogo E',10,13,'$'
     MSG3 DB 10,13,'JOGO INVALIDO, DIGITE UM NUMERO DE 1 A 5!',10,13,'$'
 
@@ -186,9 +189,12 @@ ENDM
             CMP DX,19
             JE VITORIA_    ; Se DX = 19, o jogador venceu
             CMP DX,20
-            JE SAIDA_      ; Se DX = 20, o jogador escolheu sair
+            JE SAIDA_1      ; Se DX = 20, o jogador escolheu sair
 
-            MENSAGEM MSG1  ; Mensagem para perguntar onde atirar
+            MENSAGEM TIROMSG  ; Mensagem para perguntar onde atirar
+            MENSAGEM TENRESMSG1 ;Mensagem para numeros de tentativas restantes
+            CALL TentativasRestantes    ; Procedimento que imprime o numero de tentativas restantes.
+            MENSAGEM TENRESMSG2 ; Complemento da mensagem (estético)             
             CALL Atira     ; Chama a função para processar o tiro
             PulaLinha      
 
@@ -199,10 +205,13 @@ ENDM
         MENSAGEM DERROTA
         JMP FIM
 
+            SAIDA_1:
+            JMP SAIDA_ 
+
         ; Caso o jogador vença
         VITORIA_:
         MENSAGEM VITORIA 
-        JMP FIM
+        JMP FIM 
 
         ; Caso o jogador escolha sair
         SAIDA_:
@@ -492,4 +501,34 @@ ENDM
 
     ATIRA ENDP                ; Fim do procedimento Atira
  
+    TentativasRestantes PROC 
+        PUSH_ALL  
+
+        MOV BX,10  
+        MOV AX,CX 
+        XOR CX,CX
+
+        REPEAT_TENTRES:
+            XOR DX,DX 
+
+            DIV BL 
+            MOV DL,AH 
+            PUSH DX  
+            XOR AH,AH 
+            INC CX  
+            TEST AX,AX
+        JNZ REPEAT_TENTRES
+
+            MOV AH,02  
+
+        LOOP_TENTRES:
+            POP DX 
+            OR DL,30H
+            INT 21H
+        LOOP LOOP_TENTRES       
+
+        POP_ALL
+        RET
+    TentativasRestantes ENDP         
+    
 END MAIN  
