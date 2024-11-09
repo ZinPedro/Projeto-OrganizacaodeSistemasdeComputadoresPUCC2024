@@ -260,7 +260,7 @@ ENDM
         BOT1: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
             ENCOURACADO 7,13    ; Posiciona um encouraçado em (7,13)
             FRAGATA 20,3        ; Posiciona uma fragata em (20,3)
-            FRAGATA 11,16       ; Posiciona uma fragata em (11,16)
+            SUBMARINO 11,16     ; Posiciona uma submarino em (11,16)
             SUBMARINO 17,5      ; Posiciona um submarino em (17,5)
             HIDROAV 12,6        ; Posiciona um hidroavião em (12,6)
             HIDROAV 1,1         ; Posiciona um hidroavião em (1,1)
@@ -269,7 +269,7 @@ ENDM
         BOT2_:
             ENCOURACADO 13,5    ; Posiciona um encouraçado em (13,5)
             FRAGATA 10,17       ; Posiciona uma fragata em (10,17)
-            FRAGATA 4,10        ; Posiciona uma fragata em (4,10)
+            SUBMARINO 4,10      ; Posiciona uma submarino em (4,10)
             SUBMARINO 18,13     ; Posiciona um submarino em (18,13)
             HIDROAV 13,13       ; Posiciona um hidroavião em (13,13)
             HIDROAV 8,6         ; Posiciona um hidroavião em (8,6)
@@ -278,7 +278,7 @@ ENDM
         BOT3_:
             ENCOURACADO 16,13   ; Posiciona um encouraçado em (16,13)
             FRAGATA 14,5        ; Posiciona uma fragata em (14,5)
-            FRAGATA 9,14        ; Posiciona uma fragata em (9,14)
+            SUBMARINO 9,14      ; Posiciona uma submarino em (9,14)
             SUBMARINO 1,5       ; Posiciona um submarino em (1,5)
             HIDROAV 3,6         ; Posiciona um hidroavião em (3,6)
             HIDROAV 10,3        ; Posiciona um hidroavião em (10,3)
@@ -287,7 +287,7 @@ ENDM
         BOT4_:
             ENCOURACADO 12,11   ; Posiciona um encouraçado em (12,11)
             FRAGATA 14,2        ; Posiciona uma fragata em (14,2)
-            FRAGATA 7,7         ; Posiciona uma fragata em (7,7)
+            SUBMARINO 7,7       ; Posiciona uma submarino em (7,7)
             SUBMARINO 2,3       ; Posiciona um submarino em (2,3)
             HIDROAV 4,15        ; Posiciona um hidroavião em (4,15)
             HIDROAV 15,12       ; Posiciona um hidroavião em (15,12)
@@ -296,7 +296,7 @@ ENDM
         BOT5_:
             ENCOURACADO 14,16   ; Posiciona um encouraçado em (14,16)
             FRAGATA 20,16       ; Posiciona uma fragata em (20,16)
-            FRAGATA 1,2         ; Posiciona uma fragata em (1,2)
+            SUBMARINO 1,2       ; Posiciona uma submarino em (1,2)
             SUBMARINO 6,8       ; Posiciona um submarino em (6,8)
             HIDROAV 3,14        ; Posiciona um hidroavião em (3,14)
             HIDROAV 11,7        ; Posiciona um hidroavião em (11,7)
