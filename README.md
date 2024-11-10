@@ -12,4 +12,4 @@ Deve ter uma opção de finalização automática do jogo.
 
 Grupo: Pedro Henrique Coan Zin, Eloise dos Santos Ruiz, Gustavo Bordin Correa
 
-a fazer: corrigir troca de fragata po submarino,  
+a fazer: corrigir troca de fragata po submarino  

@@ -164,7 +164,7 @@ ENDM
     MSG2 DB 10,13,'Escolha o jogo que voce quer jogar?',10,13,'1)Jogo A',10,13,'2)Jogo B',10,13,'3)Jogo C',10,13,'4)Jogo D',10,13,'5)Jogo E',10,13,'$'
     MSG3 DB 10,13,'JOGO INVALIDO, DIGITE UM NUMERO DE 1 A 5!',10,13,'$'
 
-    NPERMITIDO DB 10,13,'Esta nao e uma escolha possivel! Tente novamente: ',10,13,'$'
+    NPERMITIDO DB 10,13,'ALERTA! Esta nao e uma escolha possivel! Precione qualquer tecla para continuar. $'
     TIROREPETIDO DB 10,13,'ALERTA! Voce ja atirou nessa posicao! Nao eh possivel dar dois tiros no mesmo lugar! Precione qualquer tecla para continuar.$'
     VITORIA DB 'Parabens!! Voce acertou todos o barcos e venceu o jogo!$'
     SAIDAMSG DB 'Voce escolheu sair do jogo! GAME OVER!!$'
@@ -230,6 +230,8 @@ ENDM
         MOV AH,01H              ; Prepara para receber um caractere do teclado
         JOGO:
             INT 21H             ; Lê a entrada do teclado (caractere do usuário)
+            CMP AL, 1BH         ; Verifica novamente se a tecla ESC foi pressionada
+            JE SAIDA_           ; Sai se for ESC e encerra o jogo
             CMP AL,31H          ; Verifica se o caractere é '1'
             JE BOT1             ; Se for '1', salta para o bloco de jogo BOT1
             JB INVALIDO         ; Se o caractere for menor que '1', é inválido
@@ -241,10 +243,10 @@ ENDM
             JE BOT4             ; Se for '4', salta para o bloco de jogo BOT4
             CMP AL,35H          ; Verifica se o caractere é '5'
             JE BOT5             ; Se for '5', salta para o bloco de jogo BOT5
-
+ 
         INVALIDO:               ; Rótulo para entrada inválida
             MENSAGEM MSG3       ; Exibe mensagem informando que o jogo é inválido
-            JMP JOGO            ; Volta para o início para receber uma nova entrada
+            JMP JOGO            ; Volta para o início para receber uma nova entrada 
 
         ; Blocos de salto para os diferentes cenários de jogo
 
@@ -403,20 +405,29 @@ ENDM
             JE SAIDA2           ; Sai do procedimento se for ESC, e encerra o jogo
 
             CMP AL,08H          ; Verifica se a tecla BACKSPACE foi pressionada
-            JE BACKSPACE1       ; Se backspace foi precionada, pula para BACKSPACE1    
+            JE BACKSPACE1       ; Se backspace foi precionada, pula para BACKSPACE1 
 
             CMP AL,39H          ; Verifica se o caractere é uma letra ou está fora do intervalo de números
             JA LETRA            ; Se for uma letra, salta para o processamento de letras
-            CMP AL,30H          ; Verifica se o caractere é válido
-            JB NPERMITIDO_ATIRA_ANCORA  ; Ancora para NPERMITIDO_ATIRA por causa do alcance do salto condicional
+            
+            CMP BL, 01          ; Se o segundo número digitado é um número, verifica se o primeiro digitado é 1
+            JE DEZENA           ; Pula para DEZENA para validar o número
 
             CMP BL,02           ; Verifica se o primeiro numero digitado é 2, se for, então só é possível digitar 0 posteriormente, já que a maior linha possível é 20  
-            JNE NVINTE          ; Se não for o 2, pula para NVINTE
+            JE VINTE            ; Se o segundo caracter dor um número e o primeiro não for o 1 e nem 2, pula para NPERMITIDO_ATIRA
 
+            JMP NPERMITIDO_ATIRA_ANCORA     ; Ancora para NPERMITIDO_ATIRA por causa do alcance do salto condicional
+
+            DEZENA:             ; Caso o primeiro numero seja 1, verifica se o segundo é entre 0 e 9 
+            CMP AL,30H          ; Verifica se o caractere é válido
+            JB NPERMITIDO_ATIRA_ANCORA  ; Ancora para NPERMITIDO_ATIRA por causa do alcance do salto condicional
+            JMP TIRO_VALIDO     ; Se passar de todas as verificações é um tiro valido
+ 
+            VINTE:
             CMP AL,30H          ; Se for o 2, verifica se o número é '0'
             JNE NPERMITIDO_ATIRA ; Se não for 0, avisa que não é permitido
-
-            NVINTE:
+ 
+            TIRO_VALIDO:
             AND AL,0FH       ; Converte o número ASCII para o correspondente valor numérico
             PUSH AX          ; Salva o valor atual de AX na pilha
             MOV AL,10        ; Carrega o valor 10 para multiplicação
@@ -506,8 +517,15 @@ ENDM
             RET                    ; Retorna ao chamador após processar o tiro
 
         NPERMITIDO_ATIRA:
+            PUSH AX                ; Salva o valor atual de AX na pilha 
+
             MENSAGEM NPERMITIDO    ; Exibe a mensagem de entrada não permitida
-            JMP VOLTA_NPERMITIDO   ; Retorna ao ponto de entrada para nova tentativa
+            MOV AH,01              ; Prepara para ler um caractere para continuar
+            INT 21H                ; Espera por um entrada do usuário 
+
+            POP AX                 ; Restaura o valor original de AX 
+            INC CX                 ; Incrementa CX para que o usuário não perca uma tentativa em vão 
+            JMP RETORNO            ; Retorna ao ponto de entrada para nova tentativa
 
         ACERTO: 
             INC CX                 ; Incrementa o contador de acertos gerais
@@ -518,8 +536,9 @@ ENDM
             PUSH AX                ; Salva o valor atual de AX na pilha
             MENSAGEM TIROREPETIDO  ; Exibe a mensagem de tiro repetido
             MOV AH,01              ; Prepara para ler um caractere para continuar
-            INT 21H                ; Espera por entrada do usuário
-            POP AX                 ; Restaura o valor original de AX
+            INT 21H                ; Espera por um entrada do usuário
+            POP AX                 ; Restaura o valor original de AX 
+            INC CX                 ; Incrementa CX para que o usuário não perca uma tentativa em vão
             JMP RETORNO            ; Retorna ao chamador após tratar o tiro repetido
 
         SAIDAincondicional:
