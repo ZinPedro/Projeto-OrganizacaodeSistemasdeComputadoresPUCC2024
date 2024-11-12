@@ -180,7 +180,7 @@ ENDM
         CALL PerguntaJogo ; Pergunta ao jogador qual jogo carregar
         PulaLinha
 
-        MOV CX,100       ; Inicializa o contador de rodadas com 100 tentativas
+        MOV CX,150       ; Inicializa o contador de rodadas com 100 tentativas
 
         ; Loop principal da batalha
         BATALHA:         
