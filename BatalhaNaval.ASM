@@ -49,107 +49,6 @@ MENSAGEM MACRO MSG
     POP_ALL             
 ENDM                     
 
-; Macro para posicionar um encouraçado (tamanho 4) no tabuleiro
-ENCOURACADO MACRO  X, Y  
-    LOCAL ENCOURACADO_   
-    PUSH_ALL
-
-    MOV SI,Y
-    DEC SI              ; Ajusta índice da linha
-
-    MOV BX,X
-    DEC BX              ; Ajusta índice da coluna
-    MOV AX,20
-    MUL BL              ; Calcula deslocamento da linha
-    MOV BX,AX
-
-    MOV CX,4            ; Tamanho do encouraçado
-
-    ENCOURACADO_:
-        MOV GABARITO[BX][SI],'#' ; Posiciona parte do navio
-        INC SI                   ; Move para a próxima linha
-        LOOP ENCOURACADO_
-
-    POP_ALL
-ENDM
-
-; Macro para posicionar uma fragata (tamanho 3) no tabuleiro
-FRAGATA MACRO  X, Y     
-    LOCAL FRAGATA_      
-    PUSH_ALL
-
-    MOV SI,Y
-    DEC SI              ; Ajusta índice da linha
-
-    MOV BX,X
-    DEC BX              ; Ajusta índice da coluna
-    MOV AX,20
-    MUL BL              ; Calcula deslocamento da linha
-    MOV BX,AX
-
-    MOV CX,3            ; Tamanho da fragata
-
-    FRAGATA_:
-        MOV GABARITO[BX][SI],'#'
-        INC SI
-        LOOP FRAGATA_
-
-    POP_ALL
-ENDM
-
-; Macro para posicionar um submarino (tamanho 2) no tabuleiro
-SUBMARINO MACRO  X, Y   
-    LOCAL SUBMARINO_    
-    PUSH_ALL
-
-    MOV SI,Y
-    DEC SI              ; Ajusta índice da linha
-
-    MOV BX,X
-    DEC BX              ; Ajusta índice da coluna
-    MOV AX,20
-    MUL BL              ; Calcula deslocamento da linha
-    MOV BX,AX
-
-    MOV CX,2            ; Tamanho do submarino
-
-    SUBMARINO_:
-        MOV GABARITO[BX][SI],'#'
-        INC SI
-        LOOP SUBMARINO_
-
-    POP_ALL
-ENDM
-
-; Macro para posicionar um hidroavião (tamanho 4 (1 na primeira linha, 2 na segunda 1 na terceira)) no tabuleiro
-HIDROAV MACRO X,Y       
-    LOCAL HIDROAV_      
-    PUSH_ALL
-
-    MOV SI,Y
-    DEC SI              ; Ajusta índice da linha
-
-    MOV BX,X
-    DEC BX              ; Ajusta índice da coluna
-    MOV AX,20
-    MUL BL              ; Calcula deslocamento da linha
-    MOV BX,AX
-
-    MOV CX,2            ; Tamanho do hidroavião
-
-    MOV GABARITO[BX][SI],'#' ; Primeira posição
-    ADD BX,20            ; Move para a linha abaixo
-
-    HIDROAV_:
-        MOV GABARITO[BX][SI],'#' ; Segunda posição
-        INC SI
-        LOOP HIDROAV_
-    ADD BX,20           ; Move para linha abaixo
-    SUB SI,2            ; Volta duas colunas para a posição final
-    MOV GABARITO[BX][SI],'#' ; Terceira posição
-    POP_ALL
-ENDM
-
 .DATA                   ; Seção de dados
     VETORL DB 'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T' ; Letras para colunas
     VETORN DB '1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20' ; Números para linhas
@@ -161,8 +60,7 @@ ENDM
     TENRESMSG1 DB '(Tentativas Restantes: $' 
     TENRESMSG2 DB ')',10,13,'$'  
  
-    MSG2 DB 10,13,'Escolha o jogo que voce quer jogar?',10,13,'1)Jogo A',10,13,'2)Jogo B',10,13,'3)Jogo C',10,13,'4)Jogo D',10,13,'5)Jogo E',10,13,'$'
-    MSG3 DB 10,13,'JOGO INVALIDO, DIGITE UM NUMERO DE 1 A 5!',10,13,'$'
+    Sequencia DB 10,13,'Digite uma sequencia de 6 digitos, usando numeros de 1 a 5: (Ex:111111, 123451, 543335) (Caso voce digite um numero nao permitido, ele sera apenas ignorado)',10,13,'$'
 
     NPERMITIDO DB 10,13,'ALERTA! Esta nao e uma escolha possivel! Precione qualquer tecla para continuar. $'
     TIROREPETIDO DB 10,13,'ALERTA! Voce ja atirou nessa posicao! Nao eh possivel dar dois tiros no mesmo lugar! Precione qualquer tecla para continuar.$'
@@ -226,89 +124,455 @@ ENDM
 
     PerguntaJogo PROC
         PUSH_ALL                ; Salva todos os registradores para preservar o contexto
-        MENSAGEM MSG2           ; Exibe a mensagem perguntando qual jogo o jogador deseja escolher
         MOV AH,01H              ; Prepara para receber um caractere do teclado
-        JOGO:
+        MOV CX,6
+        MENSAGEM Sequencia 
+        
+        JOGO:          
             INT 21H             ; Lê a entrada do teclado (caractere do usuário)
+
             CMP AL, 1BH         ; Verifica novamente se a tecla ESC foi pressionada
             JE SAIDA_           ; Sai se for ESC e encerra o jogo
-            CMP AL,31H          ; Verifica se o caractere é '1'
-            JE BOT1             ; Se for '1', salta para o bloco de jogo BOT1
-            JB INVALIDO         ; Se o caractere for menor que '1', é inválido
-            CMP AL,32H          ; Verifica se o caractere é '2'
-            JE BOT2             ; Se for '2', salta para o bloco de jogo BOT2
-            CMP AL,33H          ; Verifica se o caractere é '3'
-            JE BOT3             ; Se for '3', salta para o bloco de jogo BOT3
-            CMP AL,34H          ; Verifica se o caractere é '4'
-            JE BOT4             ; Se for '4', salta para o bloco de jogo BOT4
-            CMP AL,35H          ; Verifica se o caractere é '5'
-            JE BOT5             ; Se for '5', salta para o bloco de jogo BOT5
+
+            CMP CX,6
+            JE ENCOURACADOBOT
+            CMP CX,5
+            JE FRAGATABOT
+            CMP CX,4
+            JE SUBMARINOBOT
+            CMP CX,3
+            JE SUBMARINO_2BOT
+            CMP CX,2
+            JE HIDROAVBOT
+            CMP CX,1
+            JE HIDROAV_2BOT
+
+            FRAGATABOT:
+                JMP FRAGATABOT_
+
+            SUBMARINOBOT:
+                JMP SUBMARINOBOT_
+
+            SUBMARINO_2BOT:
+                JMP SUBMARINO_2BOT_
+
+            HIDROAVBOT:
+                JMP HIDROAVBOT_
+
+            HIDROAV_2BOT:
+                JMP HIDROAV_2BOT_
+
+            ENCOURACADOBOT:
+                CMP AL,31H          ; Verifica se o caractere é '1'
+                JE ENCOURACADO1             ; Se for '1', salta para o bloco de jogo BOT1   
+                CMP AL,32H          ; Verifica se o caractere é '2'
+                JE ENCOURACADO2             ; Se for '2', salta para o bloco de jogo BOT2
+                CMP AL,33H          ; Verifica se o caractere é '3'
+                JE ENCOURACADO3             ; Se for '3', salta para o bloco de jogo BOT3
+                CMP AL,34H          ; Verifica se o caractere é '4'
+                JE ENCOURACADO4             ; Se for '4', salta para o bloco de jogo BOT4
+                CMP AL,35H          ; Verifica se o caractere é '5'
+                JE ENCOURACADO5  
+                JMP INVALIDO 
  
-        INVALIDO:               ; Rótulo para entrada inválida
-            MENSAGEM MSG3       ; Exibe mensagem informando que o jogo é inválido
-            JMP JOGO            ; Volta para o início para receber uma nova entrada 
+                ENCOURACADO1: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    PUSH_ALL
+                    MOV BX,6
+                    MOV SI,20
+                    MOV DX,1      ; Verifica direção do barco (1 = VERTICAL , 0 = HORIZONTAL) 
+                    CALL ENCOURACADO
+                    POP_ALL
+                    
+                    DEC CX 
+                    JMP JOGO
 
-        ; Blocos de salto para os diferentes cenários de jogo
+                ENCOURACADO2: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    PUSH_ALL
+                    MOV BX,11
+                    MOV SI,14
+                    MOV DX,0      ; Verifica direção do barco (1 = VERTICAL , 0 = HORIZONTAL)
+                    CALL ENCOURACADO
+                    POP_ALL
 
-            BOT2:               ; Rótulo para o jogo 2
-            JMP BOT2_           ; Salta para o posicionamento de embarcações do jogo 2
-            BOT3:               ; Rótulo para o jogo 3
-            JMP BOT3_           ; Salta para o posicionamento de embarcações do jogo 3
-            BOT4:               ; Rótulo para o jogo 4
-            JMP BOT4_           ; Salta para o posicionamento de embarcações do jogo 4
-            BOT5:               ; Rótulo para o jogo 5
-            JMP BOT5_           ; Salta para o posicionamento de embarcações do jogo 5
+                    DEC CX 
+                    JMP JOGO
+    
+                ENCOURACADO3: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    PUSH_ALL
+                    MOV BX,14
+                    MOV SI,1
+                    MOV DX,0      ; Verifica direção do barco (1 = VERTICAL , 0 = HORIZONTAL)
+                    CALL ENCOURACADO
+                    POP_ALL
 
-        BOT1: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
-            ENCOURACADO 7,13    ; Posiciona um encouraçado em (7,13)
-            FRAGATA 20,3        ; Posiciona uma fragata em (20,3)
-            SUBMARINO 11,16     ; Posiciona uma submarino em (11,16)
-            SUBMARINO 17,5      ; Posiciona um submarino em (17,5)
-            HIDROAV 12,6        ; Posiciona um hidroavião em (12,6)
-            HIDROAV 1,1         ; Posiciona um hidroavião em (1,1)
-            JMP SAIDA           ; Salta para a saída após posicionar os navios
+                    DEC CX 
+                    JMP JOGO
 
-        BOT2_:
-            ENCOURACADO 13,5    ; Posiciona um encouraçado em (13,5)
-            FRAGATA 10,17       ; Posiciona uma fragata em (10,17)
-            SUBMARINO 4,10      ; Posiciona uma submarino em (4,10)
-            SUBMARINO 18,13     ; Posiciona um submarino em (18,13)
-            HIDROAV 13,13       ; Posiciona um hidroavião em (13,13)
-            HIDROAV 8,6         ; Posiciona um hidroavião em (8,6)
-            JMP SAIDA           ; Salta para a saída após posicionar os navios
+                ENCOURACADO4: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    PUSH_ALL
+                    MOV BX,12
+                    MOV SI,6
+                    MOV DX,1      ; Verifica direção do barco (1 = VERTICAL , 0 = HORIZONTAL)
+                    CALL ENCOURACADO
+                    POP_ALL
 
-        BOT3_:
-            ENCOURACADO 16,13   ; Posiciona um encouraçado em (16,13)
-            FRAGATA 14,5        ; Posiciona uma fragata em (14,5)
-            SUBMARINO 9,14      ; Posiciona uma submarino em (9,14)
-            SUBMARINO 1,5       ; Posiciona um submarino em (1,5)
-            HIDROAV 3,6         ; Posiciona um hidroavião em (3,6)
-            HIDROAV 10,3        ; Posiciona um hidroavião em (10,3)
-            JMP SAIDA           ; Salta para a saída após posicionar os navios
+                    DEC CX 
+                    JMP JOGO
 
-        BOT4_:
-            ENCOURACADO 12,11   ; Posiciona um encouraçado em (12,11)
-            FRAGATA 14,2        ; Posiciona uma fragata em (14,2)
-            SUBMARINO 7,7       ; Posiciona uma submarino em (7,7)
-            SUBMARINO 2,3       ; Posiciona um submarino em (2,3)
-            HIDROAV 4,15        ; Posiciona um hidroavião em (4,15)
-            HIDROAV 15,12       ; Posiciona um hidroavião em (15,12)
-            JMP SAIDA           ; Salta para a saída após posicionar os navios
+                ENCOURACADO5: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    PUSH_ALL
+                    MOV BX,9
+                    MOV SI,10
+                    MOV DX,1      ; Verifica direção do barco (1 = VERTICAL , 0 = HORIZONTAL)
+                    CALL ENCOURACADO
+                    POP_ALL
 
-        BOT5_:
-            ENCOURACADO 14,16   ; Posiciona um encouraçado em (14,16)
-            FRAGATA 20,16       ; Posiciona uma fragata em (20,16)
-            SUBMARINO 1,2       ; Posiciona uma submarino em (1,2)
-            SUBMARINO 6,8       ; Posiciona um submarino em (6,8)
-            HIDROAV 3,14        ; Posiciona um hidroavião em (3,14)
-            HIDROAV 11,7        ; Posiciona um hidroavião em (11,7)
-            JMP SAIDA           ; Salta para a saída após posicionar os navios
+                    DEC CX 
+                    JMP JOGO
+            ; 
+ 
+            FRAGATABOT_:
+                CMP AL,31H          ; Verifica se o caractere é '1'
+                JE FRAGATA1             ; Se for '1', salta para o bloco de jogo BOT1 
+                CMP AL,32H          ; Verifica se o caractere é '2'
+                JE FRAGATA2             ; Se for '2', salta para o bloco de jogo BOT2
+                CMP AL,33H          ; Verifica se o caractere é '3'
+                JE FRAGATA3             ; Se for '3', salta para o bloco de jogo BOT3
+                CMP AL,34H          ; Verifica se o caractere é '4'
+                JE FRAGATA4             ; Se for '4', salta para o bloco de jogo BOT4
+                CMP AL,35H          ; Verifica se o caractere é '5'
+                JE FRAGATA5 
+                JMP INVALIDO
 
+                FRAGATA1: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    PUSH_ALL
+                    MOV BX,1
+                    MOV SI,15
+                    MOV DX,0      ; Verifica direção do barco (1 = VERTICAL , 0 = HORIZONTAL)
+                    CALL FRAGATA
+                    POP_ALL
+
+                    DEC CX 
+                    JMP JOGO
+
+                FRAGATA2: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    PUSH_ALL
+                    MOV BX,1
+                    MOV SI,20
+                    MOV DX,1      ; Verifica direção do barco (1 = VERTICAL , 0 = HORIZONTAL)
+                    CALL FRAGATA
+                    POP_ALL
+
+                    DEC CX 
+                    JMP JOGO
+    
+                FRAGATA3: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    PUSH_ALL
+                    MOV BX,3
+                    MOV SI,9
+                    MOV DX,1      ; Verifica direção do barco (1 = VERTICAL , 0 = HORIZONTAL)
+                    CALL FRAGATA
+                    POP_ALL
+
+                    DEC CX 
+                    JMP JOGO
+
+                FRAGATA4: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    PUSH_ALL
+                    MOV BX,5
+                    MOV SI,2
+                    MOV DX,0      ; Verifica direção do barco (1 = VERTICAL , 0 = HORIZONTAL)
+                    CALL FRAGATA
+                    POP_ALL
+                    
+                    DEC CX 
+                    JMP JOGO
+
+                FRAGATA5: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    PUSH_ALL
+                    MOV BX,8
+                    MOV SI,4
+                    MOV DX,0      ; Verifica direção do barco (1 = VERTICAL , 0 = HORIZONTAL)
+                    CALL FRAGATA
+                    POP_ALL
+
+                    DEC CX 
+                    JMP JOGO
+            ; 
+ 
+            SUBMARINOBOT_:
+                CMP AL,31H          ; Verifica se o caractere é '1'
+                JE SUBMARINO1             ; Se for '1', salta para o bloco de jogo BOT1 
+                CMP AL,32H          ; Verifica se o caractere é '2'
+                JE SUBMARINO2             ; Se for '2', salta para o bloco de jogo BOT2
+                CMP AL,33H          ; Verifica se o caractere é '3'
+                JE SUBMARINO3             ; Se for '3', salta para o bloco de jogo BOT3
+                CMP AL,34H          ; Verifica se o caractere é '4'
+                JE SUBMARINO4             ; Se for '4', salta para o bloco de jogo BOT4
+                CMP AL,35H          ; Verifica se o caractere é '5'
+                JE SUBMARINO5 
+                JMP INVALIDO
+
+                SUBMARINO1: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    PUSH_ALL
+                    MOV BX,6
+                    MOV SI,1
+                    MOV DX,1      ; Verifica direção do barco (1 = VERTICAL , 0 = HORIZONTAL)
+                    CALL SUBMARINO
+                    POP_ALL
+
+                    DEC CX 
+                    JMP JOGO
+
+                SUBMARINO2: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    PUSH_ALL
+                    MOV BX,7
+                    MOV SI,9
+                    MOV DX,1      ; Verifica direção do barco (1 = VERTICAL , 0 = HORIZONTAL)
+                    CALL SUBMARINO
+                    POP_ALL
+
+                    DEC CX 
+                    JMP JOGO
+    
+                SUBMARINO3: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    PUSH_ALL
+                    MOV BX,8
+                    MOV SI,17
+                    MOV DX,1      ; Verifica direção do barco (1 = VERTICAL , 0 = HORIZONTAL)
+                    CALL SUBMARINO
+                    POP_ALL
+
+                    DEC CX 
+                    JMP JOGO
+
+                SUBMARINO4: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    PUSH_ALL
+                    MOV BX,16
+                    MOV SI,1
+                    MOV DX,0      ; Verifica direção do barco (1 = VERTICAL , 0 = HORIZONTAL)
+                    CALL SUBMARINO
+                    POP_ALL
+
+                    DEC CX 
+                    JMP JOGO
+
+                SUBMARINO5: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    PUSH_ALL
+                    MOV BX,14
+                    MOV SI,11
+                    MOV DX,0     ; Verifica direção do barco (1 = VERTICAL , 0 = HORIZONTAL)
+                    CALL SUBMARINO
+                    POP_ALL
+
+                    DEC CX 
+                    JMP JOGO
+            ;
+  
+            SUBMARINO_2BOT_:
+                CMP AL,31H          ; Verifica se o caractere é '1'
+                JE SUBMARINO_21             ; Se for '1', salta para o bloco de jogo BOT1 
+                CMP AL,32H          ; Verifica se o caractere é '2'
+                JE SUBMARINO_22             ; Se for '2', salta para o bloco de jogo BOT2
+                CMP AL,33H          ; Verifica se o caractere é '3'
+                JE SUBMARINO_23             ; Se for '3', salta para o bloco de jogo BOT3
+                CMP AL,34H          ; Verifica se o caractere é '4'
+                JE SUBMARINO_24             ; Se for '4', salta para o bloco de jogo BOT4
+                CMP AL,35H          ; Verifica se o caractere é '5'
+                JE SUBMARINO_25 
+                JMP INVALIDO
+
+                SUBMARINO_21: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    PUSH_ALL
+                    MOV BX,13
+                    MOV SI,15
+                    MOV DX,0     ; Verifica direção do barco (1 = VERTICAL , 0 = HORIZONTAL)
+                    CALL SUBMARINO
+                    POP_ALL
+
+                    DEC CX 
+                    JMP JOGO
+
+                SUBMARINO_22: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    PUSH_ALL
+                    MOV BX,19
+                    MOV SI,1
+                    MOV DX,0     ; Verifica direção do barco (1 = VERTICAL , 0 = HORIZONTAL)
+                    CALL SUBMARINO
+                    POP_ALL
+
+                    DEC CX 
+                    JMP JOGO
+    
+                SUBMARINO_23: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    PUSH_ALL
+                    MOV BX,19
+                    MOV SI,10
+                    MOV DX,0     ; Verifica direção do barco (1 = VERTICAL , 0 = HORIZONTAL)
+                    CALL SUBMARINO
+                    POP_ALL
+
+                    DEC CX 
+                    JMP JOGO
+
+                SUBMARINO_24: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    PUSH_ALL
+                    MOV BX,20
+                    MOV SI,15
+                    MOV DX,0     ; Verifica direção do barco (1 = VERTICAL , 0 = HORIZONTAL)
+                    CALL SUBMARINO
+                    POP_ALL
+
+                    DEC CX 
+                    JMP JOGO
+
+                SUBMARINO_25: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    PUSH_ALL
+                    MOV BX,20
+                    MOV SI,19
+                    MOV DX,0     ; Verifica direção do barco (1 = VERTICAL , 0 = HORIZONTAL)
+                    CALL SUBMARINO
+                    POP_ALL
+
+                    DEC CX 
+                    JMP JOGO
+            ; 
+ 
+            HIDROAVBOT_:
+                CMP AL,31H          ; Verifica se o caractere é '1'
+                JE HIDROAV1             ; Se for '1', salta para o bloco de jogo BOT1 
+                CMP AL,32H          ; Verifica se o caractere é '2'
+                JE HIDROAV2             ; Se for '2', salta para o bloco de jogo BOT2
+                CMP AL,33H          ; Verifica se o caractere é '3'
+                JE HIDROAV3             ; Se for '3', salta para o bloco de jogo BOT3
+                CMP AL,34H          ; Verifica se o caractere é '4'
+                JE HIDROAV4             ; Se for '4', salta para o bloco de jogo BOT4
+                CMP AL,35H          ; Verifica se o caractere é '5'
+                JE HIDROAV5 
+                JMP INVALIDO
+
+                HIDROAV1: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    PUSH_ALL
+                    MOV BX,1
+                    MOV SI,1
+                    CALL HIDROAV
+                    POP_ALL
+
+                    DEC CX 
+                    JMP JOGO
+
+                HIDROAV2: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    PUSH_ALL
+                    MOV BX,5
+                    MOV SI,6
+                    CALL HIDROAV
+                    POP_ALL
+
+                    DEC CX 
+                    JMP JOGO
+    
+                HIDROAV3: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    PUSH_ALL
+                    MOV BX,4
+                    MOV SI,11
+                    CALL HIDROAV
+                    POP_ALL
+
+                    DEC CX 
+                    JMP JOGO
+
+                HIDROAV4: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    PUSH_ALL
+                    MOV BX,5
+                    MOV SI,15
+                    CALL HIDROAV
+                    POP_ALL
+
+                    DEC CX 
+                    JMP JOGO
+
+                HIDROAV5: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    PUSH_ALL
+                    MOV BX,11
+                    MOV SI,4
+                    CALL HIDROAV
+                    POP_ALL
+
+                    DEC CX 
+                    JMP JOGO
+            ;
+ 
+            HIDROAV_2BOT_:
+                CMP AL,31H          ; Verifica se o caractere é '1'
+                JE HIDROAV_21             ; Se for '1', salta para o bloco de jogo BOT1 
+                CMP AL,32H          ; Verifica se o caractere é '2'
+                JE HIDROAV_22             ; Se for '2', salta para o bloco de jogo BOT2
+                CMP AL,33H          ; Verifica se o caractere é '3'
+                JE HIDROAV_23             ; Se for '3', salta para o bloco de jogo BOT3
+                CMP AL,34H          ; Verifica se o caractere é '4'
+                JE HIDROAV_24             ; Se for '4', salta para o bloco de jogo BOT4
+                CMP AL,35H          ; Verifica se o caractere é '5'
+                JE HIDROAV_25 
+                JMP INVALIDO
+
+                HIDROAV_21: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    PUSH_ALL
+                    MOV BX,11
+                    MOV SI,10
+                    CALL HIDROAV
+                    POP_ALL
+
+                    LOOP JOGO_ANCORA           ; Salta para a saída após posicionar os navios
+                    JMP SAIDA
+                HIDROAV_22: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    PUSH_ALL
+                    MOV BX,13
+                    MOV SI,19
+                    CALL HIDROAV
+                    POP_ALL
+                    
+                    LOOP JOGO_ANCORA            ; Salta para a saída após posicionar os navios
+                    JMP SAIDA
+                HIDROAV_23: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    PUSH_ALL
+                    MOV BX,15
+                    MOV SI,13
+                    CALL HIDROAV
+                    POP_ALL
+
+                    LOOP JOGO_ANCORA            ; Salta para a saída após posicionar os navios
+                    JMP SAIDA
+                HIDROAV_24: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    PUSH_ALL
+                    MOV BX,16
+                    MOV SI,6
+                    CALL HIDROAV
+                    POP_ALL
+
+                    LOOP JOGO_ANCORA            ; Salta para a saída após posicionar os navios
+                    JMP SAIDA
+                HIDROAV_25: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    PUSH_ALL
+                    MOV BX,16
+                    MOV SI,17
+                    CALL HIDROAV
+                    POP_ALL
+
+                    LOOP JOGO_ANCORA           ; Salta para a saída após posicionar os navios
+            ;   
+ 
         SAIDA:
         POP_ALL                 ; Restaura todos os registradores salvos
         RET                     ; Retorna do procedimento
-    PerguntaJogo ENDP
 
+        JOGO_ANCORA:
+            JMP JOGO
+ 
+        INVALIDO:               ; Rótulo para entrada inválida 
+            JMP JOGO            ; Volta para o início para receber uma nova entrada 
+    PerguntaJogo ENDP
+      
+    
     ImprimirMatriz PROC          ; Início do procedimento para imprimir a matriz 
             PUSH_ALL             ; Salva todos os registradores para preservar o contexto           
 
@@ -591,4 +855,110 @@ ENDM
         POP_ALL             ; Restaura todos os registradores salvos
         RET                 ; Retorna ao chamador após processar o backspace
     BACKSPACE ENDP    
+    
+    ENCOURACADO PROC   
+        DEC SI              ; Ajusta índice da linha
+        
+        DEC BX              ; Ajusta índice da coluna
+        MOV AX,20
+        MUL BL              ; Calcula deslocamento da linha
+        MOV BX,AX
+
+        MOV CX,4            ; Tamanho do encouraçado
+
+        CMP DX,1
+        JE ENCOURACADO_VERTICAL
+
+        ENCOURACADO_HORIZONTAL:
+            MOV GABARITO[BX][SI],'#' ; Posiciona parte do navio
+            INC SI                   ; Move para a próxima coluna
+            LOOP ENCOURACADO_HORIZONTAL
+            JMP FIMENCOURACADO
+
+        ENCOURACADO_VERTICAL:
+            MOV GABARITO[BX][SI],'#' ; Posiciona parte do navio
+            ADD BX,20                ; Move para a próxima linha
+            LOOP ENCOURACADO_VERTICAL
+        FIMENCOURACADO: 
+        RET
+    ENCOURACADO ENDP
+
+    FRAGATA PROC     
+        DEC SI              ; Ajusta índice da linha
+
+        DEC BX              ; Ajusta índice da coluna
+        MOV AX,20
+        MUL BL              ; Calcula deslocamento da linha
+        MOV BX,AX
+
+        MOV CX,3            ; Tamanho da fragata
+
+        CMP DX,1
+        JE FRAGATA_VERTICAL
+
+        FRAGATA_HORIZONTAL:
+            MOV GABARITO[BX][SI],'#'
+            INC SI
+            LOOP FRAGATA_HORIZONTAL
+            JMP FIMFRAGATA
+
+        FRAGATA_VERTICAL:
+            MOV GABARITO[BX][SI],'#'
+            ADD BX,20
+            LOOP FRAGATA_VERTICAL
+        FIMFRAGATA: 
+        RET
+    FRAGATA ENDP
+
+    SUBMARINO PROC   
+        DEC SI              ; Ajusta índice da linha
+
+        DEC BX              ; Ajusta índice da coluna
+        MOV AX,20
+        MUL BL              ; Calcula deslocamento da linha
+        MOV BX,AX
+
+        MOV CX,2            ; Tamanho do submarino
+
+        CMP DX,1
+        JE SUBMARINO_VERTICAL
+
+        SUBMARINO_HORIZONTAL:
+            MOV GABARITO[BX][SI],'#'
+            INC SI
+            LOOP SUBMARINO_HORIZONTAL
+            JMP FIMSUBMARINO
+
+        SUBMARINO_VERTICAL:
+            MOV GABARITO[BX][SI],'#'
+            ADD BX,20
+            LOOP SUBMARINO_VERTICAL
+        FIMSUBMARINO: 
+        RET
+    SUBMARINO ENDP
+
+    HIDROAV PROC
+        DEC SI              ; Ajusta índice da linha
+
+        DEC BX              ; Ajusta índice da coluna
+        MOV AX,20
+        MUL BL              ; Calcula deslocamento da linha
+        MOV BX,AX
+
+        MOV CX,2            ; Tamanho do hidroavião
+
+        MOV GABARITO[BX][SI],'#' ; Primeira posição
+        ADD BX,20            ; Move para a linha abaixo
+
+        HIDROAV_:
+            MOV GABARITO[BX][SI],'#' ; Segunda e demais posições
+            INC SI
+            LOOP HIDROAV_
+
+        ADD BX,20           ; Move para linha abaixo
+        SUB SI,2            ; Volta duas colunas para a posição final
+        MOV GABARITO[BX][SI],'#' ; Terceira posição
+ 
+        RET
+    HIDROAV ENDP
 END MAIN  
