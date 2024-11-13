@@ -50,12 +50,16 @@ MENSAGEM MACRO MSG
 ENDM                     
 
 ; Macro para posicionar um encouraçado (tamanho 4) no tabuleiro
-ENCOURACADO MACRO  X, Y  
-    LOCAL ENCOURACADO_   
+ENCOURACADO MACRO  X, Y, DIRECAO 
+    LOCAL ENCOURACADO_HORIZONTAL
+    LOCAL ENCOURACADO_VERTICAL   
+    LOCAL FIM  
     PUSH_ALL
 
     MOV SI,Y
     DEC SI              ; Ajusta índice da linha
+
+    MOV DX,DIRECAO      ; Verifica direção do barco (1 = VERTICAL , 0 = HORIZONTAL)
 
     MOV BX,X
     DEC BX              ; Ajusta índice da coluna
@@ -65,21 +69,34 @@ ENCOURACADO MACRO  X, Y
 
     MOV CX,4            ; Tamanho do encouraçado
 
-    ENCOURACADO_:
-        MOV GABARITO[BX][SI],'#' ; Posiciona parte do navio
-        INC SI                   ; Move para a próxima linha
-        LOOP ENCOURACADO_
+    CMP DX,1
+    JE ENCOURACADO_VERTICAL
 
+    ENCOURACADO_HORIZONTAL:
+        MOV GABARITO[BX][SI],'#' ; Posiciona parte do navio
+        INC SI                   ; Move para a próxima coluna
+        LOOP ENCOURACADO_HORIZONTAL
+        JMP FIM
+
+    ENCOURACADO_VERTICAL:
+        MOV GABARITO[BX][SI],'#' ; Posiciona parte do navio
+        ADD BX,20                ; Move para a próxima linha
+        LOOP ENCOURACADO_VERTICAL
+    FIM:
     POP_ALL
 ENDM
 
 ; Macro para posicionar uma fragata (tamanho 3) no tabuleiro
-FRAGATA MACRO  X, Y     
-    LOCAL FRAGATA_      
+FRAGATA MACRO  X, Y, DIRECAO     
+    LOCAL FRAGATA_HORIZONTAL
+    LOCAL FRAGATA_VERTICAL  
+    LOCAL FIM    
     PUSH_ALL
 
     MOV SI,Y
     DEC SI              ; Ajusta índice da linha
+
+    MOV DX,DIRECAO      ; Verifica direção do barco (1 = VERTICAL , 0 = HORIZONTAL) 
 
     MOV BX,X
     DEC BX              ; Ajusta índice da coluna
@@ -89,21 +106,34 @@ FRAGATA MACRO  X, Y
 
     MOV CX,3            ; Tamanho da fragata
 
-    FRAGATA_:
+    CMP DX,1
+    JE FRAGATA_VERTICAL
+
+    FRAGATA_HORIZONTAL:
         MOV GABARITO[BX][SI],'#'
         INC SI
-        LOOP FRAGATA_
+        LOOP FRAGATA_HORIZONTAL
+        JMP FIM
 
+    FRAGATA_VERTICAL:
+        MOV GABARITO[BX][SI],'#'
+        ADD BX,20
+        LOOP FRAGATA_VERTICAL
+    FIM:
     POP_ALL
 ENDM
 
 ; Macro para posicionar um submarino (tamanho 2) no tabuleiro
-SUBMARINO MACRO  X, Y   
-    LOCAL SUBMARINO_    
+SUBMARINO MACRO  X, Y, DIRECAO   
+    LOCAL SUBMARINO_HORIZONTAL
+    LOCAL SUBMARINO_VERTICAL   
+    LOCAL FIM 
     PUSH_ALL
 
     MOV SI,Y
     DEC SI              ; Ajusta índice da linha
+
+    MOV DX,DIRECAO      ; Verifica direção do barco (1 = VERTICAL , 0 = HORIZONTAL)
 
     MOV BX,X
     DEC BX              ; Ajusta índice da coluna
@@ -113,11 +143,20 @@ SUBMARINO MACRO  X, Y
 
     MOV CX,2            ; Tamanho do submarino
 
-    SUBMARINO_:
+    CMP DX,1
+    JE SUBMARINO_VERTICAL
+
+    SUBMARINO_HORIZONTAL:
         MOV GABARITO[BX][SI],'#'
         INC SI
-        LOOP SUBMARINO_
+        LOOP SUBMARINO_HORIZONTAL
+        JMP FIM
 
+    SUBMARINO_VERTICAL:
+        MOV GABARITO[BX][SI],'#'
+        ADD BX,20
+        LOOP SUBMARINO_VERTICAL
+    FIM:
     POP_ALL
 ENDM
 
@@ -226,9 +265,9 @@ ENDM
 
     PerguntaJogo PROC
         PUSH_ALL                ; Salva todos os registradores para preservar o contexto
-        MENSAGEM MSG2           ; Exibe a mensagem perguntando qual jogo o jogador deseja escolher
         MOV AH,01H              ; Prepara para receber um caractere do teclado
         JOGO:
+            MENSAGEM MSG2           ; Exibe a mensagem perguntando qual jogo o jogador deseja escolher
             INT 21H             ; Lê a entrada do teclado (caractere do usuário)
             CMP AL, 1BH         ; Verifica novamente se a tecla ESC foi pressionada
             JE SAIDA_           ; Sai se for ESC e encerra o jogo
@@ -260,46 +299,46 @@ ENDM
             JMP BOT5_           ; Salta para o posicionamento de embarcações do jogo 5
 
         BOT1: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
-            ENCOURACADO 7,13    ; Posiciona um encouraçado em (7,13)
-            FRAGATA 20,3        ; Posiciona uma fragata em (20,3)
-            SUBMARINO 11,16     ; Posiciona uma submarino em (11,16)
-            SUBMARINO 17,5      ; Posiciona um submarino em (17,5)
+            ENCOURACADO 7,13,1    ; Posiciona um encouraçado em (7,13)
+            FRAGATA 20,3,0        ; Posiciona uma fragata em (20,3)
+            SUBMARINO 11,16,1     ; Posiciona uma submarino em (11,16)
+            SUBMARINO 17,5,1      ; Posiciona um submarino em (17,5)
             HIDROAV 12,6        ; Posiciona um hidroavião em (12,6)
             HIDROAV 1,1         ; Posiciona um hidroavião em (1,1)
             JMP SAIDA           ; Salta para a saída após posicionar os navios
 
         BOT2_:
-            ENCOURACADO 13,5    ; Posiciona um encouraçado em (13,5)
-            FRAGATA 10,17       ; Posiciona uma fragata em (10,17)
-            SUBMARINO 4,10      ; Posiciona uma submarino em (4,10)
-            SUBMARINO 18,13     ; Posiciona um submarino em (18,13)
+            ENCOURACADO 13,5,1    ; Posiciona um encouraçado em (13,5)
+            FRAGATA 10,17,1       ; Posiciona uma fragata em (10,17)
+            SUBMARINO 4,10,1      ; Posiciona uma submarino em (4,10)
+            SUBMARINO 18,13,1     ; Posiciona um submarino em (18,13)
             HIDROAV 13,13       ; Posiciona um hidroavião em (13,13)
             HIDROAV 8,6         ; Posiciona um hidroavião em (8,6)
             JMP SAIDA           ; Salta para a saída após posicionar os navios
 
         BOT3_:
-            ENCOURACADO 16,13   ; Posiciona um encouraçado em (16,13)
-            FRAGATA 14,5        ; Posiciona uma fragata em (14,5)
-            SUBMARINO 9,14      ; Posiciona uma submarino em (9,14)
-            SUBMARINO 1,5       ; Posiciona um submarino em (1,5)
+            ENCOURACADO 16,13,0   ; Posiciona um encouraçado em (16,13)
+            FRAGATA 14,5,0        ; Posiciona uma fragata em (14,5)
+            SUBMARINO 9,14,1      ; Posiciona uma submarino em (9,14)
+            SUBMARINO 1,5,1       ; Posiciona um submarino em (1,5)
             HIDROAV 3,6         ; Posiciona um hidroavião em (3,6)
             HIDROAV 10,3        ; Posiciona um hidroavião em (10,3)
             JMP SAIDA           ; Salta para a saída após posicionar os navios
 
         BOT4_:
-            ENCOURACADO 12,11   ; Posiciona um encouraçado em (12,11)
-            FRAGATA 14,2        ; Posiciona uma fragata em (14,2)
-            SUBMARINO 7,7       ; Posiciona uma submarino em (7,7)
-            SUBMARINO 2,3       ; Posiciona um submarino em (2,3)
+            ENCOURACADO 12,11,0   ; Posiciona um encouraçado em (12,11)
+            FRAGATA 14,2,1        ; Posiciona uma fragata em (14,2)
+            SUBMARINO 7,7,0       ; Posiciona uma submarino em (7,7)
+            SUBMARINO 2,3,0       ; Posiciona um submarino em (2,3)
             HIDROAV 4,15        ; Posiciona um hidroavião em (4,15)
             HIDROAV 15,12       ; Posiciona um hidroavião em (15,12)
             JMP SAIDA           ; Salta para a saída após posicionar os navios
 
         BOT5_:
-            ENCOURACADO 14,16   ; Posiciona um encouraçado em (14,16)
-            FRAGATA 20,16       ; Posiciona uma fragata em (20,16)
-            SUBMARINO 1,2       ; Posiciona uma submarino em (1,2)
-            SUBMARINO 6,8       ; Posiciona um submarino em (6,8)
+            ENCOURACADO 14,16,1   ; Posiciona um encouraçado em (14,16)
+            FRAGATA 20,16,0       ; Posiciona uma fragata em (20,16)
+            SUBMARINO 1,2,0       ; Posiciona uma submarino em (1,2)
+            SUBMARINO 6,8,0       ; Posiciona um submarino em (6,8)
             HIDROAV 3,14        ; Posiciona um hidroavião em (3,14)
             HIDROAV 11,7        ; Posiciona um hidroavião em (11,7)
             JMP SAIDA           ; Salta para a saída após posicionar os navios
