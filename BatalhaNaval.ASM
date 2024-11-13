@@ -266,6 +266,255 @@ ENDM
     PerguntaJogo PROC
         PUSH_ALL                ; Salva todos os registradores para preservar o contexto
         MOV AH,01H              ; Prepara para receber um caractere do teclado
+        MOV CX,6
+        JOGO:
+            MENSAGEM MSG2           
+            INT 21H             ; Lê a entrada do teclado (caractere do usuário)
+            CMP AL, 1BH         ; Verifica novamente se a tecla ESC foi pressionada
+            JE SAIDA_           ; Sai se for ESC e encerra o jogo
+
+            CMP CX,6
+            JE ENCOURACADO
+            CMP CX,5
+            JE FRAGATA
+            CMP CX,4
+            JE SUBMARINO
+            CMP CX,3
+            JE SUBMARINO_2
+            CMP CX,2
+            JE HIDROAV
+            CMP CX,1
+            JE HIDROAV_2
+
+            ENCOURACADO:
+                CMP AL,31H          ; Verifica se o caractere é '1'
+                JE ENCOURACADO1             ; Se for '1', salta para o bloco de jogo BOT1
+                JB INVALIDO         ; Se o caractere for menor que '1', é inválido
+                CMP AL,32H          ; Verifica se o caractere é '2'
+                JE ENCOURACADO2             ; Se for '2', salta para o bloco de jogo BOT2
+                CMP AL,33H          ; Verifica se o caractere é '3'
+                JE ENCOURACADO3             ; Se for '3', salta para o bloco de jogo BOT3
+                CMP AL,34H          ; Verifica se o caractere é '4'
+                JE ENCOURACADO4             ; Se for '4', salta para o bloco de jogo BOT4
+                CMP AL,35H          ; Verifica se o caractere é '5'
+                JE ENCOURACADO5 
+                JA INVALIDO
+
+                ENCOURACADO1: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    ENCOURACADO 6,20,1    ; Posiciona um encouraçado em (7,13)
+                    LOOP JOGO           ; Salta para a saída após posicionar os navios
+
+                ENCOURACADO2: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    ENCOURACADO 11,14,0    ; Posiciona um encouraçado em (7,13)
+                    LOOP JOGO           ; Salta para a saída após posicionar os navios
+    
+                ENCOURACADO3: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    ENCOURACADO 14,1,0    ; Posiciona um encouraçado em (7,13)
+                    LOOP JOGO           ; Salta para a saída após posicionar os navios
+
+                ENCOURACADO4: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    ENCOURACADO 12,6,1    ; Posiciona um encouraçado em (7,13)
+                    LOOP JOGO           ; Salta para a saída após posicionar os navios
+
+                ENCOURACADO5: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    ENCOURACADO 9,10,1    ; Posiciona um encouraçado em (7,13)
+                    LOOP JOGO           ; Salta para a saída após posicionar os navios
+            ;
+
+            FRAGATA:
+                CMP AL,31H          ; Verifica se o caractere é '1'
+                JE FRAGATA1             ; Se for '1', salta para o bloco de jogo BOT1
+                JB INVALIDO         ; Se o caractere for menor que '1', é inválido
+                CMP AL,32H          ; Verifica se o caractere é '2'
+                JE FRAGATA2             ; Se for '2', salta para o bloco de jogo BOT2
+                CMP AL,33H          ; Verifica se o caractere é '3'
+                JE FRAGATA3             ; Se for '3', salta para o bloco de jogo BOT3
+                CMP AL,34H          ; Verifica se o caractere é '4'
+                JE FRAGATA4             ; Se for '4', salta para o bloco de jogo BOT4
+                CMP AL,35H          ; Verifica se o caractere é '5'
+                JE FRAGATA5 
+                JA INVALIDO
+
+                FRAGATA1: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    FRAGATA 1,15,0    ; Posiciona um encouraçado em (7,13)
+                    LOOP JOGO           ; Salta para a saída após posicionar os navios
+
+                FRAGATA2: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    FRAGATA 1,20,1    ; Posiciona um encouraçado em (7,13)
+                    LOOP JOGO           ; Salta para a saída após posicionar os navios
+    
+                FRAGATA3: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    FRAGATA 3,9,1    ; Posiciona um encouraçado em (7,13)
+                    LOOP JOGO           ; Salta para a saída após posicionar os navios
+
+                FRAGATA4: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    FRAGATA 5,2,0    ; Posiciona um encouraçado em (7,13)
+                    LOOP JOGO           ; Salta para a saída após posicionar os navios
+
+                FRAGATA5: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    FRAGATA 8,4,0    ; Posiciona um encouraçado em (7,13)
+                    LOOP JOGO           ; Salta para a saída após posicionar os navios
+            ;
+
+            SUBMARINO:
+                CMP AL,31H          ; Verifica se o caractere é '1'
+                JE SUBMARINO1             ; Se for '1', salta para o bloco de jogo BOT1
+                JB INVALIDO         ; Se o caractere for menor que '1', é inválido
+                CMP AL,32H          ; Verifica se o caractere é '2'
+                JE SUBMARINO2             ; Se for '2', salta para o bloco de jogo BOT2
+                CMP AL,33H          ; Verifica se o caractere é '3'
+                JE SUBMARINO3             ; Se for '3', salta para o bloco de jogo BOT3
+                CMP AL,34H          ; Verifica se o caractere é '4'
+                JE SUBMARINO4             ; Se for '4', salta para o bloco de jogo BOT4
+                CMP AL,35H          ; Verifica se o caractere é '5'
+                JE SUBMARINO5 
+                JA INVALIDO
+
+                SUBMARINO1: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    SUBMARINO 6,1,1    ; Posiciona um encouraçado em (7,13)
+                    LOOP JOGO           ; Salta para a saída após posicionar os navios
+
+                SUBMARINO2: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    SUBMARINO 7,9,1    ; Posiciona um encouraçado em (7,13)
+                    LOOP JOGO           ; Salta para a saída após posicionar os navios
+    
+                SUBMARINO3: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    SUBMARINO 8,17,1    ; Posiciona um encouraçado em (7,13)
+                    LOOP JOGO           ; Salta para a saída após posicionar os navios
+
+                SUBMARINO4: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    SUBMARINO 16,1,0    ; Posiciona um encouraçado em (7,13)
+                    LOOP JOGO           ; Salta para a saída após posicionar os navios
+
+                SUBMARINO5: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    SUBMARINO 14,11,0    ; Posiciona um encouraçado em (7,13)
+                    LOOP JOGO           ; Salta para a saída após posicionar os navios
+            ;
+
+            SUBMARINO_2:
+                CMP AL,31H          ; Verifica se o caractere é '1'
+                JE SUBMARINO_21             ; Se for '1', salta para o bloco de jogo BOT1
+                JB INVALIDO         ; Se o caractere for menor que '1', é inválido
+                CMP AL,32H          ; Verifica se o caractere é '2'
+                JE SUBMARINO_22             ; Se for '2', salta para o bloco de jogo BOT2
+                CMP AL,33H          ; Verifica se o caractere é '3'
+                JE SUBMARINO_23             ; Se for '3', salta para o bloco de jogo BOT3
+                CMP AL,34H          ; Verifica se o caractere é '4'
+                JE SUBMARINO_24             ; Se for '4', salta para o bloco de jogo BOT4
+                CMP AL,35H          ; Verifica se o caractere é '5'
+                JE SUBMARINO_25 
+                JA INVALIDO
+
+                SUBMARINO_21: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    SUBMARINO 13,15,0    ; Posiciona um encouraçado em (7,13)
+                    LOOP JOGO           ; Salta para a saída após posicionar os navios
+
+                SUBMARINO_22: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    SUBMARINO 19,1,0    ; Posiciona um encouraçado em (7,13)
+                    LOOP JOGO           ; Salta para a saída após posicionar os navios
+    
+                SUBMARINO_23: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    SUBMARINO 19,10,0    ; Posiciona um encouraçado em (7,13)
+                    LOOP JOGO           ; Salta para a saída após posicionar os navios
+
+                SUBMARINO_24: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    SUBMARINO 20,15,0    ; Posiciona um encouraçado em (7,13)
+                    LOOP JOGO           ; Salta para a saída após posicionar os navios
+
+                SUBMARINO_25: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    SUBMARINO 20,19,0    ; Posiciona um encouraçado em (7,13)
+                    LOOP JOGO           ; Salta para a saída após posicionar os navios
+            ;
+
+            HIDROAV:
+                CMP AL,31H          ; Verifica se o caractere é '1'
+                JE HIDROAV1             ; Se for '1', salta para o bloco de jogo BOT1
+                JB INVALIDO         ; Se o caractere for menor que '1', é inválido
+                CMP AL,32H          ; Verifica se o caractere é '2'
+                JE HIDROAV2             ; Se for '2', salta para o bloco de jogo BOT2
+                CMP AL,33H          ; Verifica se o caractere é '3'
+                JE HIDROAV3             ; Se for '3', salta para o bloco de jogo BOT3
+                CMP AL,34H          ; Verifica se o caractere é '4'
+                JE HIDROAV4             ; Se for '4', salta para o bloco de jogo BOT4
+                CMP AL,35H          ; Verifica se o caractere é '5'
+                JE HIDROAV5 
+                JA INVALIDO
+
+                HIDROAV1: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    HIDROAV 1,1    ; Posiciona um encouraçado em (7,13)
+                    LOOP JOGO           ; Salta para a saída após posicionar os navios
+
+                HIDROAV2: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    HIDROAV 5,6    ; Posiciona um encouraçado em (7,13)
+                    LOOP JOGO           ; Salta para a saída após posicionar os navios
+    
+                HIDROAV3: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    HIDROAV 4,11    ; Posiciona um encouraçado em (7,13)
+                    LOOP JOGO           ; Salta para a saída após posicionar os navios
+
+                HIDROAV4: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    HIDROAV 5,15    ; Posiciona um encouraçado em (7,13)
+                    LOOP JOGO           ; Salta para a saída após posicionar os navios
+
+                HIDROAV5: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    HIDROAV 11,4    ; Posiciona um encouraçado em (7,13)
+                    LOOP JOGO           ; Salta para a saída após posicionar os navios
+            ;
+
+            HIDROAV_2:
+                CMP AL,31H          ; Verifica se o caractere é '1'
+                JE HIDROAV_21             ; Se for '1', salta para o bloco de jogo BOT1
+                JB INVALIDO         ; Se o caractere for menor que '1', é inválido
+                CMP AL,32H          ; Verifica se o caractere é '2'
+                JE HIDROAV_22             ; Se for '2', salta para o bloco de jogo BOT2
+                CMP AL,33H          ; Verifica se o caractere é '3'
+                JE HIDROAV_23             ; Se for '3', salta para o bloco de jogo BOT3
+                CMP AL,34H          ; Verifica se o caractere é '4'
+                JE HIDROAV_24             ; Se for '4', salta para o bloco de jogo BOT4
+                CMP AL,35H          ; Verifica se o caractere é '5'
+                JE HIDROAV_25 
+                JA INVALIDO
+
+                HIDROAV_21: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    HIDROAV 1,1    ; Posiciona um encouraçado em (7,13)
+                    LOOP JOGO           ; Salta para a saída após posicionar os navios
+
+                HIDROAV_22: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    HIDROAV 5,6    ; Posiciona um encouraçado em (7,13)
+                    LOOP JOGO           ; Salta para a saída após posicionar os navios
+    
+                HIDROAV_23: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    HIDROAV 4,11    ; Posiciona um encouraçado em (7,13)
+                    LOOP JOGO           ; Salta para a saída após posicionar os navios
+
+                HIDROAV_24: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    HIDROAV 5,15    ; Posiciona um encouraçado em (7,13)
+                    LOOP JOGO           ; Salta para a saída após posicionar os navios
+
+                HIDROAV_25: ;Posiciona as embarcações de acordo com as cordenadas dadas no bot 1
+                    HIDROAV 11,4    ; Posiciona um encouraçado em (7,13)
+                    LOOP JOGO           ; Salta para a saída após posicionar os navios
+            ;
+
+
+
+
+
+
+
+        SAIDA:
+        POP_ALL                 ; Restaura todos os registradores salvos
+        RET                     ; Retorna do procedimento
+
+        INVALIDO:               ; Rótulo para entrada inválida
+            MENSAGEM MSG3       ; Exibe mensagem informando que o jogo é inválido
+            JMP JOGO            ; Volta para o início para receber uma nova entrada 
+    PerguntaJogo ENDP
+      
+
+    PerguntaJogo PROC
+        PUSH_ALL                ; Salva todos os registradores para preservar o contexto
+        MOV AH,01H              ; Prepara para receber um caractere do teclado
         JOGO:
             MENSAGEM MSG2           ; Exibe a mensagem perguntando qual jogo o jogador deseja escolher
             INT 21H             ; Lê a entrada do teclado (caractere do usuário)
