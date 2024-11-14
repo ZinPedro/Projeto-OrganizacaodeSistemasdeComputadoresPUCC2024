@@ -103,7 +103,7 @@ ENDM
             LOOP BATALHA   ; Decrementa CX e volta ao início do loop se CX não for zero
 
         ; Caso o jogador perca (CX chegou a 0)
-        CALL ImprimirMatriz 
+        CALL ImprimirGabarito 
         MENSAGEM DERROTA
         JMP FIM
  
@@ -962,4 +962,70 @@ ENDM
  
         RET
     HIDROAV ENDP
+
+    ImprimirGabarito PROC          ; Início do procedimento para imprimir a matriz GABARITO
+            PUSH_ALL             ; Salva todos os registradores para preservar o contexto           
+
+            XOR BX,BX            ; Zera o registrador BX (índice da linha da matriz)
+            XOR DI,DI            ; Zera o registrador DI (índice dos vetores auxiliares)
+            MOV AH, 02h          ; Função para imprimir um caractere
+
+            MOV CX,20            ; Inicializa CX com 20 (número de colunas)
+
+            ESPAÇO               ; Chama a macro para imprimir três espaços antes do vetor de letras
+            ESPAÇO
+            ESPAÇO
+
+        VLETRA_G:                 ; Início do loop para imprimir o vetor de letras referente às colunas
+            MOV DL,VETORL[DI]   ; Carrega a letra correspondente da coluna em DL
+            INT 21H             ; Executa função para imprimir o caractere em DL
+            INC DI              ; Incrementa DI para a próxima letra
+
+            ESPAÇO              ; Imprime um espaço entre as letras
+
+            LOOP VLETRA_G         ; Repete até que todas as letras tenham sido impressas
+
+            PulaLinha           ; Chama a macro para pular uma linha
+
+            XOR DI,DI           ; Reseta DI para o índice das linhas
+        FOR_G:                    ; Início do loop para imprimir números e linhas
+            XOR SI, SI          ; Zera o registrador SI (índice da coluna)
+            
+            MOV CX, 20          ; Inicializa CX com 20 (número de colunas)
+
+            CMP DI,8            ; Verifica se DI é maior que 8 (8 representa a 9° linha da matriz)
+            JA SKIP_G             ; Se DI > 8, não gera espaço antes do número referente à linha
+            ESPAÇO              ; Imprime um espaço antes dos números se DI <= 8
+        SKIP_G:
+            
+            MOV DL,VETORN[DI]   ; Carrega o número correspondente da linha em DL
+            INT 21h             ; Executa função para imprimir o caractere em DL
+            INC DI              ; Incrementa DI para o próximo número
+
+            CMP DI,9            ; Verifica se DI é menor ou igual a 9
+            JBE FOR2_G            ; Pula para a impressão da matriz se DI <= 9
+
+        VNUMERO_G:                ; Caso DI > 9, imprime os dois dígitos do número da linha
+            MOV DL,VETORN[DI]   ; Carrega o número correspondente em DL
+            INT 21H             ; Executa função para imprimir o caractere em DL
+            INC DI              ; Incrementa DI
+
+        FOR2_G:                   ; Início do loop para imprimir a matriz
+            ESPAÇO              ; Imprime um espaço entre os valores da matriz
+
+            MOV DL, GABARITO[BX][SI] ; Carrega o valor da matriz GABARITO em DL
+            INT 21h             ; Executa função para imprimir o caractere em DL
+            INC SI              ; Incrementa SI para a próxima coluna  
+                    
+            LOOP FOR2_G           ; Repete para as 20 colunas
+
+            PulaLinha           ; Chama a macro para pular uma linha
+
+            ADD BX,20           ; Incrementa BX para a próxima linha
+            CMP BX,400          ; Verifica se BX atingiu 400 (20x20)
+            JL FOR_G              ; Se BX < 400, continua o loop para imprimir mais linhas
+
+            POP_ALL             ; Restaura todos os registradores salvos
+            RET                 ; Retorna ao chamador
+    ImprimirGabarito ENDP         ; Fim da função ImprimirGabarito
 END MAIN  
