@@ -129,8 +129,14 @@ ENDM
             MOV CX,6                        ; Inicializa CX com 6 (indicando o número de navios a serem posicionados)
             MENSAGEM Sequencia              ; Exibe a mensagem de sequência para o usuário
 
-            JOGO:          
-                INT 21H                     ; Interrompe para receber entrada do teclado e armazena o caractere em AL
+            JOGO:  
+                CMP AL,31h                  ; Verifica se o ultimo caractere digitado é permitido ou não, para nao dar bug visual caso digite o backspace novamente
+                JB PULA_BACKSPACE
+                CMP AL,35H                  ; Verifica se o ultimo caractere digitado é permitido ou não, para nao dar bug visual caso digite o backspace novamente
+                JA PULA_BACKSPACE
+                MOV DH,AL                   ; Salva o número digitado para não ter bug visual no próximo loop, caso o usuário digite um backspace 
+                PULA_BACKSPACE:   
+                INT 21H                     ; Interrompe para receber entrada do teclado e armazena o caractere em AL 
 
                 CMP AL, 1BH                 ; Compara o caractere com 1BH (ESC)
                 JE SAIDA_                   ; Se for ESC, pula para SAIDA_ e encerra o procedimento
@@ -175,6 +181,7 @@ ENDM
                     CMP AL,35H              ; Verifica se o caractere é '5'
                     JE ENCOURACADO5         ; Se for '5', vai para ENCOURACADO5
                     JMP INVALIDO            ; Caso contrário, entrada é inválida 
+
 
                 ENCOURACADO1:  
                     PUSH_ALL                ; Salva contexto  
@@ -558,7 +565,18 @@ ENDM
         INVALIDO:               ; Rótulo para entrada inválida 
             PUSH_ALL            ; Salva todos os registradores para preservar o contexto
             MOV AH,02 
- 
+
+            CMP AL,08           ; Impede bug visual, caso o usuário digite backspace
+            JNE N_BACKSPACE  
+
+            CMP CX,06           ; Impede bug visual, caso o usuário digite backspace na primeira vez
+            JE N_BACKSPACE  
+
+            MOV DL,DH           ; Caso o usuário aperte backspace, reimprime o número digitado anteriormente para voltar o local de escrita para o lugar correto
+            INT 21H  
+            
+            JMP SAIDA_INVALIDO
+            N_BACKSPACE:
             MOV DL,08           ; Imprime backspace (para voltar o ponteiro de digitação um digito)  
             INT 21H
 
@@ -567,7 +585,8 @@ ENDM
 
             MOV DL,08           ; Imprime backspace (para voltar o ponteiro de digitação um digito)  
             INT 21H
- 
+
+            SAIDA_INVALIDO:
             POP_ALL             ; Restaura todos os registradores salvos
             JMP JOGO            ; Volta para o início para receber uma nova entrada 
     PerguntaJogo ENDP
